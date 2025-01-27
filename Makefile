@@ -25,3 +25,6 @@ game.o: game.c engine.h
 clean:
 	@echo $(COLOR_YELLOW)"CLEANING"$(COLOR_END)
 	rm -f *.o game
+
+archive:
+	git archive -o ar/engine$(shell date "+%Y%m%d").tar.gz main
