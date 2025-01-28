@@ -187,17 +187,17 @@ typedef struct entity_delta {
 	float l;
 } entity_delta_t;
 
-typedef struct entity_transition entity_transition_t;
 typedef struct entity_state {
-	entity_transition_t *transition;
+	uint8_t id;
+	CList_t *transition;
 } entity_state_t;
 
-struct entity_transition {
+typedef struct entity_transition {
 	uint32_t type;
 	int32_t sym;
 	action_t action;
 	entity_state_t *to;
-};
+} entity_transition_t;
 
 #define ENTITY_CLASS \
 Window_t *window;\
@@ -206,7 +206,9 @@ layer_t layer;\
 entity_graphics_t graphics;\
 entity_delta_t delta;\
 entity_state_t *state;\
-void (*draw)(Entity_t *self);
+void (*draw)(Entity_t *self);\
+CList_t *(*states)(Entity_t *self);\
+void (*transition)(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to);
 
 typedef struct entity_s {
 	BASE_CLASS
@@ -550,6 +552,108 @@ void entity_t__draw(Entity_t *self)
 	self->entity.window->window.put(self->entity.window, self);
 }
 
+CList_t *entity_t__states(Entity_t *self)
+{
+	uint8_t				flag = 0;
+	CList_t				*list = NULL;
+	CList_t				*successor = NULL;
+	clist_block_t		*transblock = NULL;
+	clist_block_t		*stateblock = NULL;
+	entity_state_t		*elem = NULL;
+	entity_state_t		*state = NULL;
+	entity_transition_t	*transition = NULL;
+	
+	list = CList();
+	successor = CList();
+	
+	elem = self->entity.state;
+	list->clist.push(list, elem);
+	successor->clist.push(successor, elem);
+	
+	elem = successor->clist.pop(successor);
+	while (elem)
+	{
+		transblock = NULL;
+		transition = elem->transition->clist.iter(elem->transition, &transblock);
+		
+		while (transition)
+		{
+			flag = 0;
+			stateblock = NULL;
+			state = list->clist.iter(list, &stateblock);
+			
+			while (state)
+			{
+				if (state == transition->to)
+					flag = 1;
+				
+				state = list->clist.iter(list, &stateblock);
+			}
+			
+			if (!flag)
+			{
+				list->clist.push(list, transition->to);
+				successor->clist.push(successor, transition->to);
+			}
+			
+			transition = elem->transition->clist.iter(elem->transition, &transblock);
+		}
+		
+		elem = successor->clist.pop(successor);
+	}
+	
+	delete(successor);
+	
+	return list;
+}
+
+void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
+{
+	CList_t				*states = NULL;
+	clist_block_t		*block = NULL;
+	entity_state_t		*elem = NULL;
+	entity_state_t		*ptrto = NULL;
+	entity_transition_t	*transition = NULL;
+	
+	transition = calloc(1, sizeof(entity_transition_t));
+	transition->type = type;
+	transition->sym = sym;
+	transition->action = action;
+	
+	states = self->entity.states(self);
+	elem = states->clist.iter(states, &block);
+	
+	while (elem)
+	{
+		if (elem->id == to)
+		{
+			ptrto = elem;
+			elem = NULL;
+		} else
+			elem = states->clist.iter(states, &block);
+	}
+	
+	if (!ptrto)
+	{
+		ptrto = calloc(1, sizeof(entity_state_t));
+		ptrto->id = to;
+		ptrto->transition = CList();
+	}
+	
+	transition->to = ptrto;
+	
+	elem = states->clist.pop(states);
+	while(elem)
+	{
+		if (elem->id == from)
+			elem->transition->clist.push(elem->transition, transition);
+		
+		elem = states->clist.iter(states, &block);
+	}
+	
+	delete(states);
+}
+
 /*
 CONSTRUCTOR SECTION
 */
@@ -646,7 +750,13 @@ errno_t entity_t__ctor(Entity_t *self)
 	self->entity.graphics.lightingColor.a = 0x00;
 	self->entity.graphics.lightingRadius = 0.0;
 	
+	self->entity.state = calloc(1, sizeof(entity_state_t));
+	self->entity.state->id = 0;
+	self->entity.state->transition = CList();
+	
 	self->entity.draw = &entity_t__draw;
+	self->entity.states = &entity_t__states;
+	self->entity.transition = &entity_t__transition;
 	
 	return SUCCESS;
 }
@@ -708,6 +818,9 @@ errno_t entity_t__dtor(Entity_t *self)
 {
 	if (self->entity.graphics.texture)
 		SDL_DestroyTexture(self->entity.graphics.texture);
+	
+	if (self->entity.state)
+		return FAILURE;
 	
 	return SUCCESS;
 }
