@@ -157,7 +157,7 @@ uint64_t time;\
 uint64_t deltatime;\
 window_camera_t camera;\
 void (*put)(Window_t *self, Entity_t *content);\
-void (*update)(Window_t *self);
+uint8_t (*update)(Window_t *self);
 
 typedef struct window_s {
 	BASE_CLASS
@@ -208,7 +208,8 @@ entity_delta_t delta;\
 entity_state_t *state;\
 void (*draw)(Entity_t *self);\
 CList_t *(*states)(Entity_t *self);\
-void (*transition)(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to);
+void (*transition)(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to);\
+void (*update)(Entity_t *self);
 
 typedef struct entity_s {
 	BASE_CLASS
@@ -527,7 +528,7 @@ void window_t__put(Window_t *self, Entity_t *content)
 	);
 }
 
-void window_t__update(Window_t *self)
+uint8_t window_t__update(Window_t *self)
 {
 	uint64_t time;
 	
@@ -545,6 +546,8 @@ void window_t__update(Window_t *self)
 	SDL_SetRenderTarget(self->window.renderer, self->window.camera.texture);
 	SDL_SetRenderDrawColor(self->window.renderer, 0, 0, 0, 0);
 	SDL_RenderClear(self->window.renderer);
+	
+	return !(self->window.event.type == SDL_QUIT);
 }
 
 void entity_t__draw(Entity_t *self)
@@ -648,10 +651,28 @@ void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t s
 		if (elem->id == from)
 			elem->transition->clist.push(elem->transition, transition);
 		
-		elem = states->clist.iter(states, &block);
+		elem = states->clist.pop(states);
 	}
 	
 	delete(states);
+}
+
+void entity_t__update(Entity_t *self)
+{
+	if (self->entity.window->window.event.type == SDL_KEYDOWN)
+	{
+		if (self->entity.window->window.event.key.keysym.sym == SDLK_d)
+			self->entity.delta.x = 0.1;
+	}
+	
+	if (self->entity.window->window.event.type == SDL_KEYUP)
+	{
+		if (self->entity.window->window.event.key.keysym.sym == SDLK_d)
+			self->entity.delta.x = 0.0;
+	}
+	
+	self->entity.rect.x += self->entity.delta.x;
+	self->entity.rect.y += self->entity.delta.y;
 }
 
 /*
@@ -757,6 +778,7 @@ errno_t entity_t__ctor(Entity_t *self)
 	self->entity.draw = &entity_t__draw;
 	self->entity.states = &entity_t__states;
 	self->entity.transition = &entity_t__transition;
+	self->entity.update = &entity_t__update;
 	
 	return SUCCESS;
 }
@@ -819,7 +841,7 @@ errno_t entity_t__dtor(Entity_t *self)
 	if (self->entity.graphics.texture)
 		SDL_DestroyTexture(self->entity.graphics.texture);
 	
-	if (self->entity.state)
+	if (self->entity.state)/*TODO*/
 		return FAILURE;
 	
 	return SUCCESS;
