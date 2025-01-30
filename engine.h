@@ -67,11 +67,15 @@ typedef enum layer {
 Entity action enum
 */
 typedef enum action {
-	NO_ACT	= 0x0,
-	ACT_01	= 0x1,
-	ACT_02	= 0x2,
-	ACT_03	= 0x4,
-	ACT_04	= 0x8
+	NO_ACT	= 0x00,
+	ACT_01	= 0x01,
+	ACT_02	= 0x02,
+	ACT_03	= 0x04,
+	ACT_04	= 0x08,
+	ACT_05	= 0x10,
+	ACT_06	= 0x20,
+	ACT_07	= 0x40,
+	ACT_08	= 0x80
 } action_t;
 
 /*
@@ -172,6 +176,7 @@ union window_u {
 /*
 ENTITY_CLASS
 */
+#define ENTITYSPEED 0.1
 #define Entity(EWINDOW, RECT, LAYER, PATH) new(ENTITY, EWINDOW, RECT, LAYER, PATH)
 
 typedef struct entity_graphics {
@@ -209,7 +214,7 @@ entity_state_t *state;\
 void (*draw)(Entity_t *self);\
 CList_t *(*states)(Entity_t *self);\
 void (*transition)(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to);\
-void (*update)(Entity_t *self);
+uint8_t (*update)(Entity_t *self);
 
 typedef struct entity_s {
 	BASE_CLASS
@@ -657,22 +662,54 @@ void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t s
 	delete(states);
 }
 
-void entity_t__update(Entity_t *self)
+uint8_t entity_t__update(Entity_t *self)
 {
-	if (self->entity.window->window.event.type == SDL_KEYDOWN)
+	uint64_t			deltatime = 0;
+	action_t			action = NO_ACT;
+	SDL_Event			event;
+	clist_block_t		*block = NULL;
+	entity_state_t		*state = NULL;
+	entity_transition_t	*transition = NULL;
+	
+	event = self->entity.window->window.event;
+	state = self->entity.state;
+	deltatime = self->entity.window->window.deltatime;
+	
+	transition = state->transition->clist.iter(state->transition, &block);
+	while (transition)
 	{
-		if (self->entity.window->window.event.key.keysym.sym == SDLK_d)
-			self->entity.delta.x = 0.1;
+		if (transition->type == event.type &&
+			transition->sym == event.key.keysym.sym)
+		{
+			action = transition->action;
+			self->entity.state = transition->to;
+			transition = NULL;
+		} else
+			transition = state->transition->clist.iter(state->transition, &block);
 	}
 	
-	if (self->entity.window->window.event.type == SDL_KEYUP)
-	{
-		if (self->entity.window->window.event.key.keysym.sym == SDLK_d)
-			self->entity.delta.x = 0.0;
-	}
+	if (action & ACT_01)
+		self->entity.delta.x = ENTITYSPEED;
 	
-	self->entity.rect.x += self->entity.delta.x;
-	self->entity.rect.y += self->entity.delta.y;
+	if (action & ACT_02)
+		self->entity.delta.x = -ENTITYSPEED;
+	
+	if (action & ACT_03)
+		self->entity.delta.x = 0.0;
+	
+	if (action & ACT_04)
+		self->entity.delta.y = ENTITYSPEED;
+	
+	if (action & ACT_05)
+		self->entity.delta.y = -ENTITYSPEED;
+	
+	if (action & ACT_06)
+		self->entity.delta.y = 0.0;
+	
+	self->entity.rect.x += self->entity.delta.x * deltatime;
+	self->entity.rect.y += self->entity.delta.y * deltatime;
+	
+	return self->entity.state->id;
 }
 
 /*
