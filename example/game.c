@@ -14,7 +14,7 @@ int main(void)
 	
 	for (i = 0; i < 5; ++i)
 	{
-		player = Entity(myGame, rectp, LAYER_01, "./tile_0075.png");
+		player = Entity(myGame, rectp, LAYER_01, "./assets/tile_0075.png");
 		player->entity.transition(player, 0, SDL_KEYDOWN, SDLK_d, ACT_01, 0);
 		player->entity.transition(player, 0, SDL_KEYUP, SDLK_d, ACT_03, 0);
 		player->entity.transition(player, 0, SDL_KEYDOWN, SDLK_q, ACT_02, 0);

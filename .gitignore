@@ -1,4 +1,9 @@
 ar
+html
 game
+game.exe
+SDL2.dll
+SDL2_image.dll
 *.o
-*.png
+index.html
+*.zip

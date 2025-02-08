@@ -1,3 +1,7 @@
+/**
+	@file engine.h
+*/
+
 #ifndef __ENGINE_H__
 #define __ENGINE_H__
 
@@ -14,16 +18,18 @@ INCLUDE SECTION
 CLASS STRUCTURE SECTION
 */
 
-/*
-Class ctor/dtor return state
+/**
+	@enum errno
+	@brief Class ctor/dtor return state
 */
 typedef enum errno {
 	SUCCESS,
 	FAILURE
 } errno_t;
 
-/*
-Class type enum
+/**
+	@enum type
+	@brief Class type enum
 */
 typedef enum type {
 	CLIST	= 0x1,
@@ -32,8 +38,9 @@ typedef enum type {
 	ENTITY	= 0x8
 } type_t;
 
-/*
-Entity layer enum
+/**
+	@enum layer
+	@brief Entity layer enum
 */
 typedef enum layer {
 	NO_LAYER	= 0x0000,
@@ -55,8 +62,9 @@ typedef enum layer {
 	LAYER_16	= 0x8000
 } layer_t;
 
-/*
-Entity action enum
+/**
+	@enum action
+	@brief Entity action enum
 */
 typedef enum action {
 	NO_ACT	= 0x00,
@@ -242,6 +250,13 @@ typedef union class {
 CLASS FUNCTION SECTION
 */
 
+/**
+	@fn void clist_t__push(CList_t *self, void *content)
+	@brief Head push
+	@param self Object pointer
+	@param content Element pointer
+	@return void
+*/
 void clist_t__push(CList_t *self, void *content)
 {
 	clist_block_t *block = NULL;
@@ -254,6 +269,12 @@ void clist_t__push(CList_t *self, void *content)
 	self->clist.head = block;
 }
 
+/**
+	@fn void *clist_t__pop(CList_t *self)
+	@brief Head pop
+	@param self Object pointer
+	@return Head element pointer
+*/
 void *clist_t__pop(CList_t *self)
 {
 	void			*content = NULL;
@@ -271,6 +292,15 @@ void *clist_t__pop(CList_t *self)
 	return content;
 }
 
+/**
+	@fn void *clist_t__iter(CList_t *self, clist_block_t **block)
+	@brief Iterate chained list elements
+	@param self Object pointer
+	@param block Link pointer
+	@return Element pointer
+	
+	@todo explain/example
+*/
 void *clist_t__iter(CList_t *self, clist_block_t **block)
 {
 	if (!*block)
@@ -284,6 +314,13 @@ void *clist_t__iter(CList_t *self, clist_block_t **block)
 	return NULL;
 }
 
+/**
+	@fn void clist_t__remove(CList_t *self, void *content)
+	@brief Remove element
+	@param self Object pointer
+	@param content Element pointer
+	@return void
+*/
 void clist_t__remove(CList_t *self, void *content)
 {
 	clist_block_t *block = NULL;
@@ -309,6 +346,13 @@ void clist_t__remove(CList_t *self, void *content)
 	}
 }
 
+/**
+	@fn void qtree_t__insert(QTree_t *self, Entity_t *content)
+	@brief Insert element
+	@param self Object pointer
+	@param content Element pointer
+	@return void
+*/
 void qtree_t__insert(QTree_t *self, Entity_t *content)
 {
 	size_t		i, j;
@@ -364,6 +408,13 @@ void qtree_t__insert(QTree_t *self, Entity_t *content)
 	}
 }
 
+/**
+	@fn uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
+	@brief Remove element
+	@param self Object pointer
+	@param content Element pointer
+	@return Boolean for recurrent algorithm
+*/
 uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 {
 	size_t		i;
@@ -393,6 +444,13 @@ uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 	return 0;
 }
 
+/**
+	@fn CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
+	@brief Fetch elements in rect area
+	@param self Object pointer
+	@param rect Area
+	@return Chained list of elements
+*/
 CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 {
 	size_t		i;
@@ -438,6 +496,12 @@ CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 	return list;
 }
 
+/**
+	@fn void qtree_t__update(QTree_t *self)
+	@brief Update elements position in quadtree and clean unused quadtree
+	@param self Object pointer
+	@return void
+*/
 void qtree_t__update(QTree_t *self)
 {
 	size_t		i, j;
@@ -523,6 +587,15 @@ void qtree_t__update(QTree_t *self)
 	delete(elemlist);
 }
 
+/**
+	@fn void qtree_t__draw(QTree_t *self, Window_t *window)
+	@brief Draw quadtree area
+	@param self Object pointer
+	@param window Window pointer
+	@return void
+	
+	@warning Use it only for debugging
+*/
 void qtree_t__draw(QTree_t *self, Window_t *window)
 {
 	size_t i;
