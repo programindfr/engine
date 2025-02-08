@@ -15,14 +15,6 @@ CLASS STRUCTURE SECTION
 */
 
 /*
-Class structure type
-*/
-typedef union clist_u CList_t;
-typedef union qtree_u QTree_t;
-typedef union window_u Window_t;
-typedef union entity_u Entity_t;
-
-/*
 Class ctor/dtor return state
 */
 typedef enum errno {
@@ -79,6 +71,14 @@ typedef enum action {
 } action_t;
 
 /*
+Class structure type
+*/
+typedef union clist_u CList_t;
+typedef union qtree_u QTree_t;
+typedef union window_u Window_t;
+typedef union entity_u Entity_t;
+
+/*
 Function definition
 */
 void *new(type_t type, ...);
@@ -129,7 +129,8 @@ QTree_t *tree[4];\
 void (*insert)(QTree_t *self, Entity_t *content);\
 uint8_t (*remove)(QTree_t *self, Entity_t *content);\
 CList_t *(*fetch)(QTree_t *self, SDL_FRect rect);\
-void (*update)(QTree_t *self);
+void (*update)(QTree_t *self);\
+void (*draw)(QTree_t *self, Window_t *window);
 
 typedef struct qtree_s {
 	BASE_CLASS
@@ -353,10 +354,10 @@ void qtree_t__insert(QTree_t *self, Entity_t *content)
 			
 			if (SDL_PointInFRect(&point, &rect))
 			{
-				if (!self->qtree.tree[i])
-					self->qtree.tree[i] = QTree(rect);
+				if (!self->qtree.tree[j])
+					self->qtree.tree[j] = QTree(rect);
 				
-				self->qtree.tree[i]->qtree.insert(self->qtree.tree[i], elem);
+				self->qtree.tree[j]->qtree.insert(self->qtree.tree[j], elem);
 				break;
 			}
 		}
@@ -520,6 +521,21 @@ void qtree_t__update(QTree_t *self)
 	
 	delete(qtreelist);
 	delete(elemlist);
+}
+
+void qtree_t__draw(QTree_t *self, Window_t *window)
+{
+	size_t i;
+	
+	SDL_SetRenderTarget(window->window.renderer, window->window.camera.texture);
+	SDL_SetRenderDrawColor(window->window.renderer, 255, 0, 0, 0);
+	SDL_RenderDrawRectF(window->window.renderer, &(self->qtree.rect));
+	
+	for (i = 0; i < 4; ++i)
+	{
+		if (self->qtree.tree[i])
+			self->qtree.tree[i]->qtree.draw(self->qtree.tree[i], window);
+	}
 }
 
 void window_t__put(Window_t *self, Entity_t *content)
@@ -741,6 +757,7 @@ errno_t qtree_t__ctor(QTree_t *self)
 	self->qtree.remove = &qtree_t__remove;
 	self->qtree.fetch = &qtree_t__fetch;
 	self->qtree.update = &qtree_t__update;
+	self->qtree.draw = &qtree_t__draw;
 	
 	return SUCCESS;
 }
