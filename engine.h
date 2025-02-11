@@ -19,13 +19,13 @@ CLASS STRUCTURE SECTION
 */
 
 /**
-	@enum errno
+	@enum retno
 	@brief Class ctor/dtor return state
 */
-typedef enum errno {
+typedef enum retno {
 	SUCCESS,
 	FAILURE
-} errno_t;
+} retno_t;
 
 /**
 	@enum type
@@ -805,7 +805,7 @@ uint8_t entity_t__update(Entity_t *self)
 CONSTRUCTOR SECTION
 */
 
-errno_t clist_t__ctor(CList_t *self)
+retno_t clist_t__ctor(CList_t *self)
 {
 	self->clist.head = NULL;
 	self->clist.push = &clist_t__push;
@@ -816,7 +816,7 @@ errno_t clist_t__ctor(CList_t *self)
 	return SUCCESS;
 }
 
-errno_t qtree_t__ctor(QTree_t *self)
+retno_t qtree_t__ctor(QTree_t *self)
 {
 	size_t i;
 	
@@ -835,7 +835,7 @@ errno_t qtree_t__ctor(QTree_t *self)
 	return SUCCESS;
 }
 
-errno_t window_t__ctor(Window_t *self)
+retno_t window_t__ctor(Window_t *self)
 {
 	if (SDL_Init(SDL_INIT_VIDEO))
 		return FAILURE;
@@ -886,7 +886,7 @@ errno_t window_t__ctor(Window_t *self)
 	return SUCCESS;
 }
 
-errno_t entity_t__ctor(Entity_t *self)
+retno_t entity_t__ctor(Entity_t *self)
 {
 	self->entity.graphics.texture = IMG_LoadTexture(
 		self->entity.window->window.renderer,
@@ -914,7 +914,7 @@ errno_t entity_t__ctor(Entity_t *self)
 DESTRUCTOR SECTION
 */
 
-errno_t clist_t__dtor(CList_t *self)
+retno_t clist_t__dtor(CList_t *self)
 {
 	void *content = NULL;
 	
@@ -928,7 +928,7 @@ errno_t clist_t__dtor(CList_t *self)
 	return SUCCESS;
 }
 
-errno_t qtree_t__dtor(QTree_t *self)
+retno_t qtree_t__dtor(QTree_t *self)
 {
 	size_t i;
 	
@@ -944,7 +944,7 @@ errno_t qtree_t__dtor(QTree_t *self)
 	return SUCCESS;
 }
 
-errno_t window_t__dtor(Window_t *self)
+retno_t window_t__dtor(Window_t *self)
 {
 	if (self->window.camera.texture)
 		SDL_DestroyTexture(self->window.camera.texture);
@@ -963,7 +963,7 @@ errno_t window_t__dtor(Window_t *self)
 	return SUCCESS;
 }
 
-errno_t entity_t__dtor(Entity_t *self)
+retno_t entity_t__dtor(Entity_t *self)
 {
 	if (self->entity.graphics.texture)
 		SDL_DestroyTexture(self->entity.graphics.texture);

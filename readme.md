@@ -14,19 +14,18 @@ In order to build the engine for Linux/Unix you need `make`, `gcc`, `libsdl2-dev
 
 ```bash
 # To build for Linux/Unix
+make
+# Or
 make unix
 ```
 
 ### Windows
 
-In order to build the engine for Windows you need `make`, `x86_64-w64-mingw32-gcc` and some SDL files. You can install them on Debian-based systems with `apt install make gcc-mingw-w64-x86-64` and download `SDL2-devel-2.x.x-mingw.tar.gz` at <https://github.com/libsdl-org/SDL/releases>. If the archive is not extracted in your home directory, the `W64_SDL2_PATH` variable in the Makefile must be changed according to where the archive is extracted. To compile you have to edit the file `SDL2-devel-2.x.x-mingw/SDL2-2.x.x/x86_64-w64-mingw32/bin/sdl2-config`.
+In order to build the engine for Windows you need `make`, `x86_64-w64-mingw32-gcc` and some SDL files. You can install them on Debian-based systems with `apt install make gcc-mingw-w64-x86-64`.
 
-```md
-# Line 49, change this
-echo -I${prefix}/include/SDL2  -Dmain=SDL_main
-
-# To this
-echo -I${prefix}/include  -Dmain=SDL_main
+```bash
+# To download SDL files
+make dl_w64_lib
 ```
 
 Now you can compile.

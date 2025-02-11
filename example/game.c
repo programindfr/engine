@@ -1,6 +1,6 @@
 #include <engine.h>
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	size_t		i;
 	uint8_t		loop = 1;
