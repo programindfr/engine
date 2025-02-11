@@ -611,6 +611,14 @@ void qtree_t__draw(QTree_t *self, Window_t *window)
 	}
 }
 
+
+/**
+	@fn void window_t__put(Window_t *self, Entity_t *content)
+	@brief Put content to draw on the window
+	@param self Object pointer
+	@param content Element pointer
+	@return void
+*/
 void window_t__put(Window_t *self, Entity_t *content)
 {
 	SDL_SetRenderTarget(self->window.renderer, self->window.camera.texture);
@@ -622,6 +630,12 @@ void window_t__put(Window_t *self, Entity_t *content)
 	);
 }
 
+/**
+	@fn uint8_t window_t__update(Window_t *self)
+	@brief Update the window and draw all elements
+	@param self Object pointer
+	@return Boolean TRUE if quit signal is recieved
+*/
 uint8_t window_t__update(Window_t *self)
 {
 	uint64_t time;
@@ -644,11 +658,23 @@ uint8_t window_t__update(Window_t *self)
 	return !(self->window.event.type == SDL_QUIT);
 }
 
+/**
+	@fn void entity_t__draw(Entity_t *self)
+	@brief Draw element on the screen
+	@param self Object pointer
+	@return void
+*/
 void entity_t__draw(Entity_t *self)
 {
 	self->entity.window->window.put(self->entity.window, self);
 }
 
+/**
+	@fn CList_t *entity_t__states(Entity_t *self)
+	@brief Fetch Entity automata states
+	@param self Object pointer
+	@return CList_t of entity_state_t pointers
+*/
 CList_t *entity_t__states(Entity_t *self)
 {
 	uint8_t				flag = 0;
@@ -704,6 +730,17 @@ CList_t *entity_t__states(Entity_t *self)
 	return list;
 }
 
+/**
+	@fn void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
+	@brief Add a new transition in the Entity automata
+	@param self Object pointer
+	@param self Source state id
+	@param self Symbol type
+	@param self Symbol sym
+	@param self Transition effect
+	@param self Destination state id
+	@return void
+*/
 void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
 {
 	CList_t				*states = NULL;
@@ -751,6 +788,12 @@ void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t s
 	delete(states);
 }
 
+/**
+	@fn uint8_t entity_t__update(Entity_t *self)
+	@brief Update Entity internal automata
+	@param self Object pointer
+	@return Current state id of the Entity automata
+*/
 uint8_t entity_t__update(Entity_t *self)
 {
 	uint64_t			deltatime = 0;

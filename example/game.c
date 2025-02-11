@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
 	
 	for (i = 0; i < 5; ++i)
 	{
+		rectp.x += 36;
 		player = Entity(myGame, rectp, LAYER_01, "./assets/tile_0075.png");
 		player->entity.transition(player, 0, SDL_KEYDOWN, SDLK_d, ACT_01, 0);
 		player->entity.transition(player, 0, SDL_KEYUP, SDLK_d, ACT_03, 0);
