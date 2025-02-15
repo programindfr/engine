@@ -3,6 +3,8 @@ html
 lib
 game
 game.exe
+multi
+multi.exe
 SDL2.dll
 SDL2_image.dll
 *.o

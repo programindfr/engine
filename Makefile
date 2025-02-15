@@ -19,12 +19,12 @@ all: unix
 unix: CC = $(UNIX_CC)
 unix: CFLAGS += $(UNIX_SDL2_CFLAGS)
 unix: LDFLAGS += $(UNIX_SDL2_LDFLAGS)
-unix: game
+unix: game multi
 
 w64: CC = $(W64_CC)
 w64: CFLAGS += $(W64_SDL2_CFLAGS)
 w64: LDFLAGS += $(W64_SDL2_LDFLAGS)
-w64: game
+w64: game multi
 	ln -sf ./lib/bin/SDL2.dll SDL2.dll
 	ln -sf ./lib/bin/SDL2_image.dll SDL2_image.dll
 
@@ -39,6 +39,18 @@ example/game.o: example/game.c engine.h
 	$(CC) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
 	@echo "CC $@ "$(COLOR_GREEN)"OK"$(COLOR_END)
 
+multi: example/a.o example/b.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+	@echo "LD $@ "$(COLOR_GREEN)"SUCCESS"$(COLOR_END)
+
+example/a.o: example/a.c engine.h example/b.h
+	$(CC) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
+	@echo "CC $@ "$(COLOR_GREEN)"OK"$(COLOR_END)
+
+example/b.o: example/b.c engine.h example/b.h
+	$(CC) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
+	@echo "CC $@ "$(COLOR_GREEN)"OK"$(COLOR_END)
+
 doc:
 	ln -sf html/index.html index.html
 	doxygen -x
@@ -46,7 +58,7 @@ doc:
 
 clean:
 	@echo $(COLOR_YELLOW)"CLEANING"$(COLOR_END)
-	rm -rf example/*.o game game.exe SDL2.dll SDL2_image.dll html index.html
+	rm -rf example/*.o game game.exe multi multi.exe SDL2.dll SDL2_image.dll html index.html
 
 archive: clean
 	git archive -o ar/engine$(shell date "+%Y%m%d").tar.gz main

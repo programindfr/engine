@@ -89,8 +89,8 @@ typedef union entity_u Entity_t;
 /*
 Function definition
 */
-void *new(type_t type, ...);
-void delete(void *ptr);
+static void *new(type_t type, ...);
+static void delete(void *ptr);
 
 /*
 BASE_CLASS
@@ -251,13 +251,13 @@ CLASS FUNCTION SECTION
 */
 
 /**
-	@fn void clist_t__push(CList_t *self, void *content)
+	@fn static void clist_t__push(CList_t *self, void *content)
 	@brief Head push
 	@param self Object pointer
 	@param content Element pointer
 	@return void
 */
-void clist_t__push(CList_t *self, void *content)
+static void clist_t__push(CList_t *self, void *content)
 {
 	clist_block_t *block = NULL;
 	
@@ -270,12 +270,12 @@ void clist_t__push(CList_t *self, void *content)
 }
 
 /**
-	@fn void *clist_t__pop(CList_t *self)
+	@fn static void *clist_t__pop(CList_t *self)
 	@brief Head pop
 	@param self Object pointer
 	@return Head element pointer
 */
-void *clist_t__pop(CList_t *self)
+static void *clist_t__pop(CList_t *self)
 {
 	void			*content = NULL;
 	clist_block_t	*block = NULL;
@@ -293,7 +293,7 @@ void *clist_t__pop(CList_t *self)
 }
 
 /**
-	@fn void *clist_t__iter(CList_t *self, clist_block_t **block)
+	@fn static void *clist_t__iter(CList_t *self, clist_block_t **block)
 	@brief Iterate chained list elements
 	@param self Object pointer
 	@param block Link pointer
@@ -301,7 +301,7 @@ void *clist_t__pop(CList_t *self)
 	
 	@todo explain/example
 */
-void *clist_t__iter(CList_t *self, clist_block_t **block)
+static void *clist_t__iter(CList_t *self, clist_block_t **block)
 {
 	if (!*block)
 		*block = self->clist.head;
@@ -315,13 +315,13 @@ void *clist_t__iter(CList_t *self, clist_block_t **block)
 }
 
 /**
-	@fn void clist_t__remove(CList_t *self, void *content)
+	@fn static void clist_t__remove(CList_t *self, void *content)
 	@brief Remove element
 	@param self Object pointer
 	@param content Element pointer
 	@return void
 */
-void clist_t__remove(CList_t *self, void *content)
+static void clist_t__remove(CList_t *self, void *content)
 {
 	clist_block_t *block = NULL;
 	clist_block_t *prev = NULL;
@@ -347,13 +347,13 @@ void clist_t__remove(CList_t *self, void *content)
 }
 
 /**
-	@fn void qtree_t__insert(QTree_t *self, Entity_t *content)
+	@fn static void qtree_t__insert(QTree_t *self, Entity_t *content)
 	@brief Insert element
 	@param self Object pointer
 	@param content Element pointer
 	@return void
 */
-void qtree_t__insert(QTree_t *self, Entity_t *content)
+static void qtree_t__insert(QTree_t *self, Entity_t *content)
 {
 	size_t		i, j;
 	size_t		bound;
@@ -409,13 +409,13 @@ void qtree_t__insert(QTree_t *self, Entity_t *content)
 }
 
 /**
-	@fn uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
+	@fn static uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 	@brief Remove element
 	@param self Object pointer
 	@param content Element pointer
 	@return Boolean for recurrent algorithm
 */
-uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
+static uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 {
 	size_t		i;
 	SDL_FPoint	point;
@@ -445,13 +445,13 @@ uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 }
 
 /**
-	@fn CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
+	@fn static CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 	@brief Fetch elements in rect area
 	@param self Object pointer
 	@param rect Area
 	@return Chained list of elements
 */
-CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
+static CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 {
 	size_t		i;
 	CList_t		*list = NULL;
@@ -497,12 +497,12 @@ CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 }
 
 /**
-	@fn void qtree_t__update(QTree_t *self)
+	@fn static void qtree_t__update(QTree_t *self)
 	@brief Update elements position in quadtree and clean unused quadtree
 	@param self Object pointer
 	@return void
 */
-void qtree_t__update(QTree_t *self)
+static void qtree_t__update(QTree_t *self)
 {
 	size_t		i, j;
 	size_t		count = 0;
@@ -588,7 +588,7 @@ void qtree_t__update(QTree_t *self)
 }
 
 /**
-	@fn void qtree_t__draw(QTree_t *self, Window_t *window)
+	@fn static void qtree_t__draw(QTree_t *self, Window_t *window)
 	@brief Draw quadtree area
 	@param self Object pointer
 	@param window Window pointer
@@ -596,7 +596,7 @@ void qtree_t__update(QTree_t *self)
 	
 	@warning Use it only for debugging
 */
-void qtree_t__draw(QTree_t *self, Window_t *window)
+static void qtree_t__draw(QTree_t *self, Window_t *window)
 {
 	size_t i;
 	
@@ -613,13 +613,13 @@ void qtree_t__draw(QTree_t *self, Window_t *window)
 
 
 /**
-	@fn void window_t__put(Window_t *self, Entity_t *content)
+	@fn static void window_t__put(Window_t *self, Entity_t *content)
 	@brief Put content to draw on the window
 	@param self Object pointer
 	@param content Element pointer
 	@return void
 */
-void window_t__put(Window_t *self, Entity_t *content)
+static void window_t__put(Window_t *self, Entity_t *content)
 {
 	SDL_SetRenderTarget(self->window.renderer, self->window.camera.texture);
 	SDL_RenderCopyF(
@@ -631,12 +631,12 @@ void window_t__put(Window_t *self, Entity_t *content)
 }
 
 /**
-	@fn uint8_t window_t__update(Window_t *self)
+	@fn static uint8_t window_t__update(Window_t *self)
 	@brief Update the window and draw all elements
 	@param self Object pointer
 	@return Boolean TRUE if quit signal is recieved
 */
-uint8_t window_t__update(Window_t *self)
+static uint8_t window_t__update(Window_t *self)
 {
 	uint64_t time;
 	
@@ -659,23 +659,23 @@ uint8_t window_t__update(Window_t *self)
 }
 
 /**
-	@fn void entity_t__draw(Entity_t *self)
+	@fn static void entity_t__draw(Entity_t *self)
 	@brief Draw element on the screen
 	@param self Object pointer
 	@return void
 */
-void entity_t__draw(Entity_t *self)
+static void entity_t__draw(Entity_t *self)
 {
 	self->entity.window->window.put(self->entity.window, self);
 }
 
 /**
-	@fn CList_t *entity_t__states(Entity_t *self)
+	@fn static CList_t *entity_t__states(Entity_t *self)
 	@brief Fetch Entity automata states
 	@param self Object pointer
 	@return CList_t of entity_state_t pointers
 */
-CList_t *entity_t__states(Entity_t *self)
+static CList_t *entity_t__states(Entity_t *self)
 {
 	uint8_t				flag = 0;
 	CList_t				*list = NULL;
@@ -731,7 +731,7 @@ CList_t *entity_t__states(Entity_t *self)
 }
 
 /**
-	@fn void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
+	@fn static void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
 	@brief Add a new transition in the Entity automata
 	@param self Object pointer
 	@param self Source state id
@@ -741,7 +741,7 @@ CList_t *entity_t__states(Entity_t *self)
 	@param self Destination state id
 	@return void
 */
-void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
+static void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
 {
 	CList_t				*states = NULL;
 	clist_block_t		*block = NULL;
@@ -789,12 +789,12 @@ void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t s
 }
 
 /**
-	@fn uint8_t entity_t__update(Entity_t *self)
+	@fn static uint8_t entity_t__update(Entity_t *self)
 	@brief Update Entity internal automata
 	@param self Object pointer
 	@return Current state id of the Entity automata
 */
-uint8_t entity_t__update(Entity_t *self)
+static uint8_t entity_t__update(Entity_t *self)
 {
 	uint64_t			deltatime = 0;
 	action_t			action = NO_ACT;
@@ -848,7 +848,7 @@ uint8_t entity_t__update(Entity_t *self)
 CONSTRUCTOR SECTION
 */
 
-retno_t clist_t__ctor(CList_t *self)
+static retno_t clist_t__ctor(CList_t *self)
 {
 	self->clist.head = NULL;
 	self->clist.push = &clist_t__push;
@@ -859,7 +859,7 @@ retno_t clist_t__ctor(CList_t *self)
 	return SUCCESS;
 }
 
-retno_t qtree_t__ctor(QTree_t *self)
+static retno_t qtree_t__ctor(QTree_t *self)
 {
 	size_t i;
 	
@@ -878,7 +878,7 @@ retno_t qtree_t__ctor(QTree_t *self)
 	return SUCCESS;
 }
 
-retno_t window_t__ctor(Window_t *self)
+static retno_t window_t__ctor(Window_t *self)
 {
 	if (SDL_Init(SDL_INIT_VIDEO))
 		return FAILURE;
@@ -929,7 +929,7 @@ retno_t window_t__ctor(Window_t *self)
 	return SUCCESS;
 }
 
-retno_t entity_t__ctor(Entity_t *self)
+static retno_t entity_t__ctor(Entity_t *self)
 {
 	self->entity.graphics.texture = IMG_LoadTexture(
 		self->entity.window->window.renderer,
@@ -957,7 +957,7 @@ retno_t entity_t__ctor(Entity_t *self)
 DESTRUCTOR SECTION
 */
 
-retno_t clist_t__dtor(CList_t *self)
+static retno_t clist_t__dtor(CList_t *self)
 {
 	void *content = NULL;
 	
@@ -971,7 +971,7 @@ retno_t clist_t__dtor(CList_t *self)
 	return SUCCESS;
 }
 
-retno_t qtree_t__dtor(QTree_t *self)
+static retno_t qtree_t__dtor(QTree_t *self)
 {
 	size_t i;
 	
@@ -987,7 +987,7 @@ retno_t qtree_t__dtor(QTree_t *self)
 	return SUCCESS;
 }
 
-retno_t window_t__dtor(Window_t *self)
+static retno_t window_t__dtor(Window_t *self)
 {
 	if (self->window.camera.texture)
 		SDL_DestroyTexture(self->window.camera.texture);
@@ -1006,7 +1006,7 @@ retno_t window_t__dtor(Window_t *self)
 	return SUCCESS;
 }
 
-retno_t entity_t__dtor(Entity_t *self)
+static retno_t entity_t__dtor(Entity_t *self)
 {
 	if (self->entity.graphics.texture)
 		SDL_DestroyTexture(self->entity.graphics.texture);
@@ -1021,7 +1021,7 @@ retno_t entity_t__dtor(Entity_t *self)
 NEW ALLOCATOR SECTION
 */
 
-void *new(type_t type, ...)
+static void *new(type_t type, ...)
 {
 	void	*self = NULL;
 	va_list	arguments;
@@ -1067,7 +1067,7 @@ void *new(type_t type, ...)
 DELETE DEALLOCATOR SECTION
 */
 
-void delete(void *self)
+static void delete(void *self)
 {
 	if (*(type_t *) self & CLIST)
 		clist_t__dtor((CList_t *) self);
