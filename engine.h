@@ -386,7 +386,10 @@ static void qtree_t__insert(QTree_t *self, Entity_t *content)
 	{
 		elem = content;
 		if (!flag && i < 4)
+		{
 			elem = self->qtree.content[i];
+			self->qtree.content[i] = NULL;
+		}
 		
 		point.x = elem->entity.rect.x;
 		point.y = elem->entity.rect.y;

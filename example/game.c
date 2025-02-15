@@ -12,9 +12,10 @@ int main(int argc, char *argv[])
 	QTree_t *tree = QTree(screen);
 	CList_t *list = NULL;
 	
-	for (i = 0; i < 5; ++i)
+	for (i = 0; i < 100; ++i)
 	{
-		rectp.x += 36;
+		rectp.x = 10 + 1 * (i % 10);
+		rectp.y = 10 + 1 * (i / 10);
 		player = Entity(myGame, rectp, LAYER_01, "./assets/tile_0075.png");
 		player->entity.transition(player, 0, SDL_KEYDOWN, SDLK_d, ACT_01, 0);
 		player->entity.transition(player, 0, SDL_KEYUP, SDLK_d, ACT_03, 0);
