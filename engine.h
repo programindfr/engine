@@ -1011,11 +1011,41 @@ static retno_t window_t__dtor(Window_t *self)
 
 static retno_t entity_t__dtor(Entity_t *self)
 {
+	CList_t				*states = NULL;
+	clist_block_t		*block = NULL;
+	entity_state_t		*elem = NULL;
+	entity_transition_t	*transition = NULL;
+	
 	if (self->entity.graphics.texture)
 		SDL_DestroyTexture(self->entity.graphics.texture);
 	
-	if (self->entity.state)/*TODO*/
-		return FAILURE;
+	if (self->entity.state)
+	{
+		states = self->entity.states(self);
+		elem = states->clist.iter(states, &block);
+		
+		while (elem)
+		{
+			transition = elem->transition->clist.pop(elem->transition);
+			while (transition)
+			{
+				free(transition);
+				transition = elem->transition->clist.pop(elem->transition);
+			}
+			
+			delete(elem->transition);
+			elem = states->clist.iter(states, &block);
+		}
+		
+		elem = states->clist.pop(states);
+		while (elem)
+		{
+			free(elem);
+			elem = states->clist.pop(states);
+		}
+		
+		delete(states);
+	}
 	
 	return SUCCESS;
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, requests, tarfile, shutil
+import os, requests, tarfile
 
 repos = [
 	"",
