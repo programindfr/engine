@@ -32,8 +32,8 @@ typedef enum retno {
 	@brief Class type enum
 */
 typedef enum type {
-	CLIST	= 0x1,
-	QTREE	= 0x2,
+	CLIST	 = 0x1,
+	QTREE	 = 0x2,
 	WINDOW	= 0x4,
 	ENTITY	= 0x8
 } type_t;
@@ -215,6 +215,7 @@ typedef struct entity_transition {
 
 #define ENTITY_CLASS \
 Window_t *window;\
+QTree_t *qtree;\
 SDL_FRect rect;\
 layer_t layer;\
 entity_graphics_t graphics;\
@@ -277,7 +278,7 @@ static void clist_t__push(CList_t *self, void *content)
 */
 static void *clist_t__pop(CList_t *self)
 {
-	void			*content = NULL;
+	void			 *content = NULL;
 	clist_block_t	*block = NULL;
 	
 	if (!self->clist.head)
@@ -358,9 +359,13 @@ static void qtree_t__insert(QTree_t *self, Entity_t *content)
 	size_t		i, j;
 	size_t		bound;
 	size_t		flag = (size_t) NULL;
-	Entity_t	*elem = NULL;
-	SDL_FRect	rect;
+	QTree_t	   *qtree = NULL;
+	Entity_t	  *elem = NULL;
+	SDL_FRect	 rect;
 	SDL_FPoint	point;
+
+	if (!content->entity.qtree)
+		content->entity.qtree = self;
 	
 	point.x = content->entity.rect.x;
 	point.y = content->entity.rect.y;
@@ -403,8 +408,9 @@ static void qtree_t__insert(QTree_t *self, Entity_t *content)
 			{
 				if (!self->qtree.tree[j])
 					self->qtree.tree[j] = QTree(rect);
-				
-				self->qtree.tree[j]->qtree.insert(self->qtree.tree[j], elem);
+
+				qtree = self->qtree.tree[j];
+				qtree->qtree.insert(qtree, elem);
 				break;
 			}
 		}
@@ -421,6 +427,7 @@ static void qtree_t__insert(QTree_t *self, Entity_t *content)
 static uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 {
 	size_t		i;
+	QTree_t	   *qtree = NULL;
 	SDL_FPoint	point;
 	
 	point.x = content->entity.rect.x;
@@ -434,12 +441,15 @@ static uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 		if (self->qtree.content[i] == content)
 		{
 			self->qtree.content[i] = NULL;
+			content->entity.qtree = NULL;
 			return 1;
 		}
 		
 		if (self->qtree.tree[i])
 		{
-			if (self->qtree.tree[i]->qtree.remove(self->qtree.tree[i], content))
+			qtree = self->qtree.tree[i];
+			
+			if (qtree->qtree.remove(qtree, content))
 				return 1;
 		}
 	}
@@ -456,12 +466,12 @@ static uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 */
 static CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 {
-	size_t		i;
-	CList_t		*list = NULL;
-	CList_t		*sublist = NULL;
-	Entity_t	*elem = NULL;
+	size_t	   i;
+	CList_t	  *list = NULL;
+	CList_t	  *sublist = NULL;
+	QTree_t	  *qtree = NULL;
+	Entity_t	 *elem = NULL;
 	SDL_FRect	subrect;
-	SDL_FPoint	point;
 	
 	list = CList();
 	
@@ -469,20 +479,20 @@ static CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 	{
 		if (self->qtree.content[i])
 		{
-			point.x = self->qtree.content[i]->entity.rect.x;
-			point.y = self->qtree.content[i]->entity.rect.y;
-			
-			if (SDL_PointInFRect(&point, &rect))
+			subrect = self->qtree.content[i]->entity.rect;
+
+			if (SDL_HasIntersectionF(&subrect, &rect))
 				list->clist.push(list, self->qtree.content[i]);
 		}
 		
 		if (self->qtree.tree[i])
 		{
-			subrect = self->qtree.tree[i]->qtree.rect;
-			
+			qtree = self->qtree.tree[i];
+			subrect = qtree->qtree.rect;
+
 			if (SDL_HasIntersectionF(&subrect, &rect))
 			{
-				sublist = self->qtree.tree[i]->qtree.fetch(self->qtree.tree[i], rect);
+				sublist = qtree->qtree.fetch(qtree, rect);
 				
 				elem = sublist->clist.pop(sublist);
 				while (elem)
@@ -510,10 +520,10 @@ static void qtree_t__update(QTree_t *self)
 	size_t		i, j;
 	size_t		count = 0;
 	size_t		flag = (size_t) NULL;
-	CList_t		*elemlist = NULL;
-	CList_t		*qtreelist = NULL;
-	QTree_t		*subqtree = NULL;
-	Entity_t	*elem = NULL;
+	CList_t	   *elemlist = NULL;
+	CList_t	   *qtreelist = NULL;
+	QTree_t	   *subqtree = NULL;
+	Entity_t	  *elem = NULL;
 	SDL_FPoint	point;
 	
 	elemlist = CList();
@@ -631,6 +641,9 @@ static void window_t__put(Window_t *self, Entity_t *content)
 		NULL,
 		&(content->entity.rect)
 	);
+	/* /!\ debug usage*/
+	SDL_SetRenderDrawColor(self->window.renderer, 0, 255, 0, 0);
+	SDL_RenderDrawRectF(self->window.renderer, &(content->entity.rect));
 }
 
 /**
@@ -683,10 +696,10 @@ static CList_t *entity_t__states(Entity_t *self)
 	uint8_t				flag = 0;
 	CList_t				*list = NULL;
 	CList_t				*successor = NULL;
-	clist_block_t		*transblock = NULL;
-	clist_block_t		*stateblock = NULL;
-	entity_state_t		*elem = NULL;
-	entity_state_t		*state = NULL;
+	clist_block_t		  *transblock = NULL;
+	clist_block_t		  *stateblock = NULL;
+	entity_state_t		 *elem = NULL;
+	entity_state_t		 *state = NULL;
 	entity_transition_t	*transition = NULL;
 	
 	list = CList();
@@ -747,9 +760,9 @@ static CList_t *entity_t__states(Entity_t *self)
 static void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
 {
 	CList_t				*states = NULL;
-	clist_block_t		*block = NULL;
-	entity_state_t		*elem = NULL;
-	entity_state_t		*ptrto = NULL;
+	clist_block_t		  *block = NULL;
+	entity_state_t		 *elem = NULL;
+	entity_state_t		 *ptrto = NULL;
 	entity_transition_t	*transition = NULL;
 	
 	transition = calloc(1, sizeof(entity_transition_t));
@@ -799,16 +812,27 @@ static void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, in
 */
 static uint8_t entity_t__update(Entity_t *self)
 {
-	uint64_t			deltatime = 0;
-	action_t			action = NO_ACT;
-	SDL_Event			event;
-	clist_block_t		*block = NULL;
-	entity_state_t		*state = NULL;
+	uint8_t				flag = 0;
+	QTree_t				*qtree = NULL;
+	CList_t				*list = NULL;
+	Entity_t			   *elem = NULL;
+	uint64_t			   deltatime = 0;
+	action_t			   action = NO_ACT;
+	SDL_FRect			  area;
+	SDL_FRect			  rect;
+	SDL_Event			  event;
+	clist_block_t		  *block = NULL;
+	entity_state_t		 *state = NULL;
 	entity_transition_t	*transition = NULL;
 	
 	event = self->entity.window->window.event;
 	state = self->entity.state;
 	deltatime = self->entity.window->window.deltatime;
+	rect = self->entity.rect;
+	area.x = rect.x - rect.w;
+	area.y = rect.y - rect.h;
+	area.w = rect.w * 3;
+	area.h = rect.h * 3;
 	
 	transition = state->transition->clist.iter(state->transition, &block);
 	while (transition)
@@ -840,9 +864,32 @@ static uint8_t entity_t__update(Entity_t *self)
 	
 	if (action & ACT_06)
 		self->entity.delta.y = 0.0;
-	
-	self->entity.rect.x += self->entity.delta.x * deltatime;
-	self->entity.rect.y += self->entity.delta.y * deltatime;
+
+	rect.x += self->entity.delta.x * deltatime;
+	rect.y += self->entity.delta.y * deltatime;
+	area.x += self->entity.delta.x * deltatime;
+	area.y += self->entity.delta.y * deltatime;
+	qtree = self->entity.qtree;
+
+	if (qtree)
+		list = qtree->qtree.fetch(qtree, area);
+
+	if (list)
+	{
+		elem = list->clist.pop(list);
+		while (elem)
+		{
+			if (elem != self && elem->entity.layer == self->entity.layer)
+				flag |= SDL_HasIntersectionF(&(elem->entity.rect), &rect);
+			
+			elem = list->clist.pop(list);
+		}
+		
+		delete(list);
+	}
+
+	if (!flag)
+		self->entity.rect = rect;
 	
 	return self->entity.state->id;
 }
@@ -1012,8 +1059,8 @@ static retno_t window_t__dtor(Window_t *self)
 static retno_t entity_t__dtor(Entity_t *self)
 {
 	CList_t				*states = NULL;
-	clist_block_t		*block = NULL;
-	entity_state_t		*elem = NULL;
+	clist_block_t		  *block = NULL;
+	entity_state_t		 *elem = NULL;
 	entity_transition_t	*transition = NULL;
 	
 	if (self->entity.graphics.texture)
@@ -1056,7 +1103,7 @@ NEW ALLOCATOR SECTION
 
 static void *new(type_t type, ...)
 {
-	void	*self = NULL;
+	void	   *self = NULL;
 	va_list	arguments;
 	
 	va_start(arguments, type);
