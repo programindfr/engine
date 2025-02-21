@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 	size_t	   i;
 	uint8_t	  loop = 1;
 	SDL_FRect	rectb = { 0, 0, 16, 16 };
-	SDL_FRect	rectp = { 4, 4, 8, 8 };
+	SDL_FRect	rectp = { 3, 3, 10, 12 };
 	SDL_FRect	screen = { 0, 0, 800, 600 };
 	
 	Window_t *myGame = Window();
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 		delete(list);
 		
 		tree->qtree.update(tree);
-		tree->qtree.draw(tree, myGame);
+		/*tree->qtree.draw(tree, myGame);*/
 		
 		loop = myGame->window.update(myGame);
 	}

@@ -62,5 +62,5 @@ clean:
 	@echo $(COLOR_YELLOW)"CLEANING"$(COLOR_END)
 	rm -rf example/*.o game game.exe multi multi.exe SDL2.dll SDL2_image.dll html index.html
 
-archive: clean
+archive:
 	git archive -o ar/engine$(shell date "+%Y%m%d").tar.gz main

@@ -667,8 +667,8 @@ static void window_t__put(Window_t *self, Entity_t *content)
 		NULL, &rect
 	);
 	/* /!\ debug usage*/
-	SDL_SetRenderDrawColor(self->window.renderer, 0, 255, 0, 0);
-	SDL_RenderDrawRectF(self->window.renderer, &rect);
+	/*SDL_SetRenderDrawColor(self->window.renderer, 0, 255, 0, 0);
+	SDL_RenderDrawRectF(self->window.renderer, &rect);*/
 }
 
 /**
@@ -994,8 +994,8 @@ static retno_t window_t__ctor(Window_t *self)
 	
 	self->window.camera.rect.x = 0.0;
 	self->window.camera.rect.y = 0.0;
-	self->window.camera.rect.w = 800.0;
-	self->window.camera.rect.h = 600.0;
+	self->window.camera.rect.w = 400.0;
+	self->window.camera.rect.h = 300.0;
 	
 	self->window.camera.texture = SDL_CreateTexture(
 		self->window.renderer,
