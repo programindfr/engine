@@ -186,19 +186,34 @@ union window_u {
 ENTITY_CLASS
 */
 #define ENTITYSPEED 0.1
-#define Entity(EWINDOW, RECT, LAYER, PATH) new(ENTITY, EWINDOW, RECT, LAYER, PATH)
+#define Entity(WINDOW, XPOS, YPOS, LAYER, RECT, PATH) new(ENTITY, WINDOW, (float) (XPOS), (float) (YPOS), LAYER, RECT, PATH)
+
+typedef struct entity_position {
+	float x;
+	float y;
+	layer_t layer;
+} entity_position_t;
 
 typedef struct entity_graphics {
 	char *path;
 	SDL_Texture *texture;
+	float width;
+	float height;
 	SDL_Color lightingColor;
 	float lightingRadius;
 } entity_graphics_t;
 
+typedef struct entity_health {
+	SDL_FRect rect;
+	float hp;
+	float hpMax;
+	float hit;
+} entity_health_t;
+
 typedef struct entity_delta {
 	float x;
 	float y;
-	float l;
+	float lenght;
 } entity_delta_t;
 
 typedef struct entity_state {
@@ -216,9 +231,9 @@ typedef struct entity_transition {
 #define ENTITY_CLASS \
 Window_t *window;\
 QTree_t *qtree;\
-SDL_FRect rect;\
-layer_t layer;\
+entity_position_t position;\
 entity_graphics_t graphics;\
+entity_health_t health;\
 entity_delta_t delta;\
 entity_state_t *state;\
 void (*draw)(Entity_t *self);\
@@ -367,8 +382,8 @@ static void qtree_t__insert(QTree_t *self, Entity_t *content)
 	if (!content->entity.qtree)
 		content->entity.qtree = self;
 	
-	point.x = content->entity.rect.x;
-	point.y = content->entity.rect.y;
+	point.x = content->entity.position.x + content->entity.health.rect.x;
+	point.y = content->entity.position.y + content->entity.health.rect.y;
 	
 	for (i = 0; i < 4; ++i)
 		flag |= (size_t) self->qtree.tree[i];
@@ -396,8 +411,8 @@ static void qtree_t__insert(QTree_t *self, Entity_t *content)
 			self->qtree.content[i] = NULL;
 		}
 		
-		point.x = elem->entity.rect.x;
-		point.y = elem->entity.rect.y;
+		point.x = elem->entity.position.x + elem->entity.health.rect.x;
+		point.y = elem->entity.position.y + elem->entity.health.rect.y;
 		
 		for (j = 0; j < 4; ++j)
 		{
@@ -430,8 +445,8 @@ static uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 	QTree_t	   *qtree = NULL;
 	SDL_FPoint	point;
 	
-	point.x = content->entity.rect.x;
-	point.y = content->entity.rect.y;
+	point.x = content->entity.position.x + content->entity.health.rect.x;
+	point.y = content->entity.position.y + content->entity.health.rect.y;
 	
 	if (!SDL_PointInFRect(&point, &(self->qtree.rect)))
 		return 0;
@@ -479,10 +494,13 @@ static CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 	{
 		if (self->qtree.content[i])
 		{
-			subrect = self->qtree.content[i]->entity.rect;
+			elem = self->qtree.content[i];
+			subrect = elem->entity.health.rect;
+			subrect.x += elem->entity.position.x;
+			subrect.y += elem->entity.position.y;
 
 			if (SDL_HasIntersectionF(&subrect, &rect))
-				list->clist.push(list, self->qtree.content[i]);
+				list->clist.push(list, elem);
 		}
 		
 		if (self->qtree.tree[i])
@@ -540,12 +558,13 @@ static void qtree_t__update(QTree_t *self)
 		{
 			if (subqtree->qtree.content[i])
 			{
-				point.x = subqtree->qtree.content[i]->entity.rect.x;
-				point.y = subqtree->qtree.content[i]->entity.rect.y;
+				elem = subqtree->qtree.content[i];
+				point.x = elem->entity.position.x + elem->entity.health.rect.x;
+				point.y = elem->entity.position.y + elem->entity.health.rect.y;
 				
 				if (!SDL_PointInFRect(&point, &(subqtree->qtree.rect)))
 				{
-					elemlist->clist.push(elemlist, subqtree->qtree.content[i]);
+					elemlist->clist.push(elemlist, elem);
 					subqtree->qtree.content[i] = NULL;
 				}
 			}
@@ -634,16 +653,22 @@ static void qtree_t__draw(QTree_t *self, Window_t *window)
 */
 static void window_t__put(Window_t *self, Entity_t *content)
 {
+	SDL_FRect rect;
+	
+	rect.x = content->entity.position.x;
+	rect.y = content->entity.position.y;
+	rect.w = content->entity.graphics.width;
+	rect.h = content->entity.graphics.height;
+	
 	SDL_SetRenderTarget(self->window.renderer, self->window.camera.texture);
 	SDL_RenderCopyF(
 		self->window.renderer,
 		content->entity.graphics.texture,
-		NULL,
-		&(content->entity.rect)
+		NULL, &rect
 	);
 	/* /!\ debug usage*/
 	SDL_SetRenderDrawColor(self->window.renderer, 0, 255, 0, 0);
-	SDL_RenderDrawRectF(self->window.renderer, &(content->entity.rect));
+	SDL_RenderDrawRectF(self->window.renderer, &rect);
 }
 
 /**
@@ -670,6 +695,10 @@ static uint8_t window_t__update(Window_t *self)
 	SDL_SetRenderTarget(self->window.renderer, self->window.camera.texture);
 	SDL_SetRenderDrawColor(self->window.renderer, 0, 0, 0, 0);
 	SDL_RenderClear(self->window.renderer);
+
+#ifdef FPS_ECO
+	SDL_Delay(16);
+#endif
 	
 	return !(self->window.event.type == SDL_QUIT);
 }
@@ -820,6 +849,7 @@ static uint8_t entity_t__update(Entity_t *self)
 	action_t			   action = NO_ACT;
 	SDL_FRect			  area;
 	SDL_FRect			  rect;
+	SDL_FRect			  elemrect;
 	SDL_Event			  event;
 	clist_block_t		  *block = NULL;
 	entity_state_t		 *state = NULL;
@@ -828,11 +858,13 @@ static uint8_t entity_t__update(Entity_t *self)
 	event = self->entity.window->window.event;
 	state = self->entity.state;
 	deltatime = self->entity.window->window.deltatime;
-	rect = self->entity.rect;
-	area.x = rect.x - rect.w;
-	area.y = rect.y - rect.h;
-	area.w = rect.w * 3;
-	area.h = rect.h * 3;
+	rect = self->entity.health.rect;
+	rect.x += self->entity.position.x;
+	rect.y += self->entity.position.y;
+	area.x = self->entity.position.x - self->entity.graphics.width;
+	area.y = self->entity.position.y - self->entity.graphics.height;
+	area.w = self->entity.graphics.width * 3;
+	area.h = self->entity.graphics.height * 3;
 	
 	transition = state->transition->clist.iter(state->transition, &block);
 	while (transition)
@@ -879,8 +911,15 @@ static uint8_t entity_t__update(Entity_t *self)
 		elem = list->clist.pop(list);
 		while (elem)
 		{
-			if (elem != self && elem->entity.layer == self->entity.layer)
-				flag |= SDL_HasIntersectionF(&(elem->entity.rect), &rect);
+			if (elem != self &&
+				elem->entity.position.layer & self->entity.position.layer)
+			{
+				elemrect = elem->entity.health.rect;
+				elemrect.x += elem->entity.position.x;
+				elemrect.y += elem->entity.position.y;
+				
+				flag |= SDL_HasIntersectionF(&elemrect, &rect);
+			}
 			
 			elem = list->clist.pop(list);
 		}
@@ -889,7 +928,10 @@ static uint8_t entity_t__update(Entity_t *self)
 	}
 
 	if (!flag)
-		self->entity.rect = rect;
+	{
+		self->entity.position.x += self->entity.delta.x * deltatime;
+		self->entity.position.y += self->entity.delta.y * deltatime;
+	}
 	
 	return self->entity.state->id;
 }
@@ -981,10 +1023,21 @@ static retno_t window_t__ctor(Window_t *self)
 
 static retno_t entity_t__ctor(Entity_t *self)
 {
+	int width = 0;
+	int height = 0;
+	
 	self->entity.graphics.texture = IMG_LoadTexture(
 		self->entity.window->window.renderer,
 		self->entity.graphics.path
 	);
+	
+	SDL_QueryTexture(
+		self->entity.graphics.texture,
+		NULL, NULL, &width, &height
+	);
+	self->entity.graphics.width = width;
+	self->entity.graphics.height = height;
+	
 	self->entity.graphics.lightingColor.r = 0x00;
 	self->entity.graphics.lightingColor.g = 0x00;
 	self->entity.graphics.lightingColor.b = 0x00;
@@ -1131,8 +1184,10 @@ static void *new(type_t type, ...)
 	{
 		self = calloc(1, sizeof(Entity_t));
 		((Entity_t *) self)->entity.window = va_arg(arguments, Window_t *);
-		((Entity_t *) self)->entity.rect = va_arg(arguments, SDL_FRect);
-		((Entity_t *) self)->entity.layer = va_arg(arguments, layer_t);
+		((Entity_t *) self)->entity.position.x = va_arg(arguments, double);
+		((Entity_t *) self)->entity.position.y = va_arg(arguments, double);
+		((Entity_t *) self)->entity.position.layer = va_arg(arguments, layer_t);
+		((Entity_t *) self)->entity.health.rect = va_arg(arguments, SDL_FRect);
 		((Entity_t *) self)->entity.graphics.path = va_arg(arguments, char *);
 		entity_t__ctor((Entity_t *) self);
 	}

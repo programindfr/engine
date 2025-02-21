@@ -4,25 +4,43 @@ int main(int argc, char *argv[])
 {
 	size_t	   i;
 	uint8_t	  loop = 1;
-	SDL_FRect	rectp = { 0, 0, 16, 16 };
+	SDL_FRect	rectb = { 0, 0, 16, 16 };
+	SDL_FRect	rectp = { 4, 4, 8, 8 };
 	SDL_FRect	screen = { 0, 0, 800, 600 };
 	
 	Window_t *myGame = Window();
 	Entity_t *player = NULL;
 	QTree_t *tree = QTree(screen);
 	CList_t *list = NULL;
+	clist_block_t *block = NULL;
 	
 	for (i = 0; i < 60; ++i)
 	{
-		rectp.x = 32 + 16 * (i % 30);
-		rectp.y = 32 + 16 * (i / 30) * 3;
-		player = Entity(myGame, rectp, LAYER_01, "./assets/tile_0075.png");
+		player = Entity(
+			myGame,
+			32 + 16 * (i % 30),
+			32 + 16 * (i / 30) * 3,
+			LAYER_01 | LAYER_02,
+			rectb,
+			"./assets/Tiles/tile_0075.png"
+		);
 		tree->qtree.insert(tree, player);
 	}
 
-	rectp.x = 32;
-	rectp.y = 128;
-	player = Entity(myGame, rectp, LAYER_01, "./assets/tile_0075.png");
+	for (i = 0; i < 60; ++i)
+	{
+		player = Entity(
+			myGame,
+			32 + 16 * (i % 30),
+			48 + 16 * (i / 30),
+			LAYER_01,
+			rectb,
+			"./assets/Tiles/tile_0028.png"
+		);
+		tree->qtree.insert(tree, player);
+	}
+
+	player = Entity(myGame, 32, 128, LAYER_02 | LAYER_03, rectp, "./assets/Tiles/tile_0024.png");
 	player->entity.transition(player, 0, SDL_KEYDOWN, SDLK_d, ACT_01, 0);
 	player->entity.transition(player, 0, SDL_KEYUP, SDLK_d, ACT_03, 0);
 	player->entity.transition(player, 0, SDL_KEYDOWN, SDLK_q, ACT_02, 0);
@@ -37,13 +55,28 @@ int main(int argc, char *argv[])
 	
 	while (loop)
 	{
+		block = NULL;
 		list = tree->qtree.fetch(tree, screen);
-		player = list->clist.pop(list);
+		player = list->clist.iter(list, &block);
 		
 		while (player)
 		{
-			player->entity.update(player);
-			player->entity.draw(player);
+			if (player->entity.position.layer & LAYER_01)
+			{
+				player->entity.update(player);
+				player->entity.draw(player);
+			}
+			player = list->clist.iter(list, &block);
+		}
+
+		player = list->clist.pop(list);
+		while (player)
+		{
+			if (player->entity.position.layer & LAYER_03)
+			{
+				player->entity.update(player);
+				player->entity.draw(player);
+			}
 			player = list->clist.pop(list);
 		}
 		
