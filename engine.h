@@ -18,12 +18,14 @@ INCLUDE SECTION
 CLASS STRUCTURE SECTION
 */
 
+#define LOG_ERROR(RETNO, NAME) if (RETNO) SDL_LogError(SDL_LOG_CATEGORY_ERROR, "l:%d no:%d %s", __LINE__, RETNO, NAME)
+
 /**
 	@enum retno
 	@brief Class ctor/dtor return state
 */
 typedef enum retno {
-	SUCCESS,
+	SUCCESS = 0,
 	FAILURE
 } retno_t;
 
@@ -972,6 +974,10 @@ static retno_t qtree_t__ctor(QTree_t *self)
 
 static retno_t window_t__ctor(Window_t *self)
 {
+#ifdef DEBUG
+	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_WARN);
+#endif
+	
 	if (SDL_Init(SDL_INIT_VIDEO))
 		return FAILURE;
 	
@@ -1030,6 +1036,7 @@ static retno_t entity_t__ctor(Entity_t *self)
 		self->entity.window->window.renderer,
 		self->entity.graphics.path
 	);
+	LOG_ERROR(!self->entity.graphics.texture, SDL_GetError());
 	
 	SDL_QueryTexture(
 		self->entity.graphics.texture,
@@ -1158,26 +1165,30 @@ static void *new(type_t type, ...)
 {
 	void	   *self = NULL;
 	va_list	arguments;
+	retno_t	retno;
 	
 	va_start(arguments, type);
 	
 	if (type & CLIST)
 	{
 		self = calloc(1, sizeof(CList_t));
-		clist_t__ctor((CList_t *) self);
+		retno = clist_t__ctor((CList_t *) self);
+		LOG_ERROR(retno, "clist_t__ctor");
 	}
 	
 	if (type & QTREE)
 	{
 		self = calloc(1, sizeof(QTree_t));
 		((QTree_t *) self)->qtree.rect = va_arg(arguments, SDL_FRect);
-		qtree_t__ctor((QTree_t *) self);
+		retno = qtree_t__ctor((QTree_t *) self);
+		LOG_ERROR(retno, "qtree_t__ctor");
 	}
 	
 	if (type & WINDOW)
 	{
 		self = calloc(1, sizeof(Window_t));
-		window_t__ctor((Window_t *) self);
+		retno = window_t__ctor((Window_t *) self);
+		LOG_ERROR(retno, "window_t__ctor");
 	}
 	
 	if (type & ENTITY)
@@ -1189,7 +1200,8 @@ static void *new(type_t type, ...)
 		((Entity_t *) self)->entity.position.layer = va_arg(arguments, layer_t);
 		((Entity_t *) self)->entity.health.rect = va_arg(arguments, SDL_FRect);
 		((Entity_t *) self)->entity.graphics.path = va_arg(arguments, char *);
-		entity_t__ctor((Entity_t *) self);
+		retno = entity_t__ctor((Entity_t *) self);
+		LOG_ERROR(retno, "entity_t__ctor");
 	}
 	
 	va_end(arguments);
