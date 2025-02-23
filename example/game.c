@@ -6,7 +6,9 @@ int main(int argc, char *argv[])
 	uint8_t	  loop = 1;
 	SDL_FRect	rectb = { 0, 0, 16, 16 };
 	SDL_FRect	rectp = { 3, 3, 10, 12 };
-	SDL_FRect	screen = { 0, 0, 800, 600 };
+	SDL_FRect	screen = { 0, 0, 400, 250 };
+	layer_t	  layer = NO_LAYER;
+	float		x, y;
 	
 	Window_t *myGame = Window();
 	Entity_t *player = NULL;
@@ -14,25 +16,34 @@ int main(int argc, char *argv[])
 	CList_t *list = NULL;
 	clist_block_t *block = NULL;
 	
-	for (i = 0; i < 60; ++i)
+	for (i = 0; i < 400; ++i)
 	{
-		player = Entity(
-			myGame,
-			32 + 16 * (i % 30),
-			32 + 16 * (i / 30) * 3,
-			LAYER_01 | LAYER_02,
-			rectb,
-			"./assets/Tiles/tile_0075.png"
-		);
-		tree->qtree.insert(tree, player);
+		x = 16 * (i % 25);
+		y = 16 * (i / 25);
+
+		if (x == 0 || y == 0 || x == 24*16 || y == 15*16)
+		{
+			player = Entity(
+				myGame,
+				x,
+				y,
+				LAYER_01 | LAYER_02,
+				rectb,
+				"./assets/Tiles/tile_0075.png"
+			);
+			tree->qtree.insert(tree, player);
+		}
 	}
 
-	for (i = 0; i < 60; ++i)
+	for (i = 0; i < 348; ++i)
 	{
+		x = 16 + 16 * (i % 25);
+		y = 16 + 16 * (i / 25);
+
 		player = Entity(
 			myGame,
-			32 + 16 * (i % 30),
-			48 + 16 * (i / 30),
+			x,
+			y,
 			LAYER_01,
 			rectb,
 			"./assets/Tiles/tile_0028.png"
@@ -61,7 +72,8 @@ int main(int argc, char *argv[])
 		
 		while (player)
 		{
-			if (player->entity.position.layer & LAYER_01)
+			layer = player->entity.getLayer(player);
+			if (layer & LAYER_01)
 			{
 				player->entity.update(player);
 				player->entity.draw(player);
@@ -72,7 +84,8 @@ int main(int argc, char *argv[])
 		player = list->clist.pop(list);
 		while (player)
 		{
-			if (player->entity.position.layer & LAYER_03)
+			layer = player->entity.getLayer(player);
+			if (layer & LAYER_03)
 			{
 				player->entity.update(player);
 				player->entity.draw(player);
