@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
 	SDL_FRect	screen = { 0, 0, 400, 250 };
 	layer_t	  layer = NO_LAYER;
 	float		x, y;
+	SDL_Color	color = { 255, 200, 128, 255 };
 	
 	Window_t *myGame = Window();
 	Entity_t *player = NULL;
@@ -52,6 +53,7 @@ int main(int argc, char *argv[])
 	}
 
 	player = Entity(myGame, 32, 128, LAYER_02 | LAYER_03, rectp, "./assets/Tiles/tile_0024.png");
+	player->entity.setLighting(player, 16, color);
 	player->entity.transition(player, 0, SDL_KEYDOWN, SDLK_d, ACT_01, 0);
 	player->entity.transition(player, 0, SDL_KEYUP, SDLK_d, ACT_03, 0);
 	player->entity.transition(player, 0, SDL_KEYDOWN, SDLK_q, ACT_02, 0);

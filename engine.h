@@ -9,16 +9,22 @@
 INCLUDE SECTION
 */
 
+#include <math.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 /*
 CLASS STRUCTURE SECTION
 */
 
 #define LOG_ERROR(RETNO, NAME) if (RETNO) SDL_LogError(SDL_LOG_CATEGORY_ERROR, "l:%d no:%d %s", __LINE__, RETNO, NAME)
+#define SIGMOID(VAR) (1 / (1 + exp(-VAR)))
+#define MODULUS(XVAR, YVAR) (sqrt((XVAR) * (XVAR) + (YVAR) * (YVAR)))
+#define MAX(XVAR, YVAR) ((XVAR) > (YVAR) ? (XVAR) : (YVAR))
+#define MIN(XVAR, YVAR) ((XVAR) < (YVAR) ? (XVAR) : (YVAR))
 
 /**
 	@enum retno
@@ -206,8 +212,8 @@ typedef struct entity_graphics {
 	SDL_Texture *texture;
 	float width;
 	float height;
-	SDL_Color lightingColor;
-	float lightingRadius;
+	SDL_Texture *shadow;
+	float radius;
 } entity_graphics_t;
 
 typedef struct entity_health {
@@ -247,6 +253,7 @@ entity_graphics_t	graphics;\
 void		   (*draw)(Entity_t *self);\
 void		   (*setQTree)(Entity_t *self, QTree_t *qtree);\
 void		   (*setDeltaPosition)(Entity_t *self, float dx, float dy);\
+void		   (*setLighting)(Entity_t *self, float radius, SDL_Color color);\
 void		   (*transition)(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to);\
 uint8_t		(*update)(Entity_t *self);\
 CList_t		*(*states)(Entity_t *self);\
@@ -254,8 +261,10 @@ layer_t		(*getLayer)(Entity_t *self);\
 QTree_t		*(*getQTree)(Entity_t *self);\
 SDL_FRect	  (*getHitbox)(Entity_t *self);\
 SDL_FRect	  (*getTextureRect)(Entity_t *self);\
+SDL_FRect	  (*getLightingRect)(Entity_t *self);\
 SDL_FPoint	 (*getPosition)(Entity_t *self);\
-SDL_Texture	*(*getTexture)(Entity_t *self);
+SDL_Texture	*(*getTexture)(Entity_t *self);\
+SDL_Texture	*(*getLighting)(Entity_t *self);\
 
 typedef struct entity_s {
 	BASE_CLASS
@@ -643,7 +652,7 @@ static void qtree_t__draw(QTree_t *self, Window_t *window)
 	size_t i;
 	
 	SDL_SetRenderTarget(window->window.renderer, window->window.camera.texture);
-	SDL_SetRenderDrawColor(window->window.renderer, 255, 0, 0, 0);
+	SDL_SetRenderDrawColor(window->window.renderer, 255, 0, 0, 255);
 	SDL_RenderDrawRectF(window->window.renderer, &(self->qtree.rect));
 	
 	for (i = 0; i < 4; ++i)
@@ -664,8 +673,27 @@ static void qtree_t__draw(QTree_t *self, Window_t *window)
 static void window_t__put(Window_t *self, Entity_t *content)
 {
 	SDL_FRect rect;
+	SDL_FRect shadowrect;
+	SDL_Texture *shadow = NULL;
 
 	rect = content->entity.getTextureRect(content);
+	shadow = content->entity.getLighting(content);
+	shadowrect = content->entity.getLightingRect(content);
+
+	if (shadow)
+	{
+		SDL_SetRenderTarget(
+			self->window.renderer,
+			self->window.camera.shadow
+		);
+		
+		SDL_RenderCopyF(
+			self->window.renderer,
+			shadow,
+			NULL,
+			&shadowrect
+		);
+	}
 	
 	SDL_SetRenderTarget(
 		self->window.renderer,
@@ -680,7 +708,7 @@ static void window_t__put(Window_t *self, Entity_t *content)
 	);
 	
 #ifdef DEBUG_BOX
-	SDL_SetRenderDrawColor(self->window.renderer, 0, 255, 0, 0);
+	SDL_SetRenderDrawColor(self->window.renderer, 0, 255, 0, 255);
 	SDL_RenderDrawRectF(
 		self->window.renderer,
 		&rect
@@ -707,10 +735,15 @@ static uint8_t window_t__update(Window_t *self)
 	
 	SDL_SetRenderTarget(self->window.renderer, NULL);
 	SDL_RenderCopyF(self->window.renderer, self->window.camera.texture, NULL, NULL);
+	SDL_RenderCopyF(self->window.renderer, self->window.camera.shadow, NULL, NULL);
 	SDL_RenderPresent(self->window.renderer);
 	
 	SDL_SetRenderTarget(self->window.renderer, self->window.camera.texture);
-	SDL_SetRenderDrawColor(self->window.renderer, 0, 0, 0, 0);
+	SDL_SetRenderDrawColor(self->window.renderer, 0, 0, 0, 255);
+	SDL_RenderClear(self->window.renderer);
+
+	SDL_SetRenderTarget(self->window.renderer, self->window.camera.shadow);
+	SDL_SetRenderDrawColor(self->window.renderer, 32, 48, 64, 255);
 	SDL_RenderClear(self->window.renderer);
 
 #ifdef FPS_ECO
@@ -1084,6 +1117,98 @@ static SDL_FRect entity_t__getHitbox(Entity_t *self)
 	return rect;
 }
 
+/**
+	@fn static void entity_t__setLighting(Entity_t *self, float radius, SDL_Color color)
+	@brief Set entity lighting radius/color by processing texture
+	@param self Object pointer
+	@param radius Lighting radius
+	@param color Lighting color
+	@return void
+
+	@warning This function is slow so don't call it often
+*/
+static void entity_t__setLighting(Entity_t *self, float radius, SDL_Color color)
+{
+	int		i, j;
+	int		width;
+	int		height;
+	int		brightness;
+	float	lenght;
+	float	lenghtmod;
+	float tmp;
+	SDL_FRect	rect;
+	SDL_PixelFormat *format = NULL;
+	uint32_t *pixels = NULL;
+
+	self->entity.graphics.radius = radius;
+	rect = self->entity.getTextureRect(self);
+	width = rect.w * radius;
+	height = rect.h * radius;
+	lenght = MIN(rect.w, rect.h) * radius / 2;
+	lenghtmod = MODULUS(lenght, lenght);
+
+	pixels = calloc(width * height, sizeof(uint32_t));
+	format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
+	
+	if (self->entity.graphics.shadow)
+		SDL_DestroyTexture(self->entity.graphics.shadow);
+
+	self->entity.graphics.shadow = SDL_CreateTexture(
+		self->entity.window->window.renderer,
+		SDL_PIXELFORMAT_RGBA8888,
+		SDL_TEXTUREACCESS_TARGET,
+		width,
+		height
+	);
+	SDL_SetTextureBlendMode(self->entity.graphics.shadow, SDL_BLENDMODE_ADD);
+
+	for (i = 0; i < width; ++i)
+	{
+		for (j = 0; j < height; ++j)
+		{
+			tmp = (lenghtmod - MODULUS(i - lenght, j - lenght)) * 12 / lenghtmod - 8;
+			brightness = color.a * SIGMOID(tmp);
+			/*printf("[ %f, %f, %d ] ", tmp, SIGMOID(tmp), brightness);*/
+			pixels[i * width + j] = SDL_MapRGBA(format, color.r, color.g, color.b, brightness);
+		}
+	}
+
+	SDL_UpdateTexture(self->entity.graphics.shadow, NULL, pixels, sizeof(uint32_t) * width);
+	
+	SDL_FreeFormat(format);
+	free(pixels);
+}
+
+/**
+	@fn static SDL_Texture *entity_t__getLighting(Entity_t *self)
+	@brief Get entity lighting texture
+	@param self Object pointer
+	@return Entity lighting texture
+*/
+static SDL_Texture *entity_t__getLighting(Entity_t *self)
+{
+	return self->entity.graphics.shadow;
+}
+
+/**
+	@fn static SDL_FRect entity_t__getLightingRect(Entity_t *self)
+	@brief Get entity Lighting rect
+	@param self Object pointer
+	@return Entity lighting rect
+*/
+static SDL_FRect entity_t__getLightingRect(Entity_t *self)
+{
+	SDL_FRect rect;
+
+	rect = self->entity.getTextureRect(self);
+	rect.x -= rect.w * (self->entity.graphics.radius - 1) / 2;
+	rect.y -= rect.h * (self->entity.graphics.radius - 1) / 2;
+	rect.w *= self->entity.graphics.radius;
+	rect.h *= self->entity.graphics.radius;
+
+	return rect;
+}
+
 /*
 CONSTRUCTOR SECTION
 */
@@ -1156,6 +1281,7 @@ static retno_t window_t__ctor(Window_t *self)
 		self->window.camera.rect.w,
 		self->window.camera.rect.h
 	);
+	SDL_SetTextureBlendMode(self->window.camera.texture, SDL_BLENDMODE_BLEND);
 	
 	self->window.camera.shadow = SDL_CreateTexture(
 		self->window.renderer,
@@ -1164,6 +1290,7 @@ static retno_t window_t__ctor(Window_t *self)
 		self->window.camera.rect.w,
 		self->window.camera.rect.h
 	);
+	SDL_SetTextureBlendMode(self->window.camera.shadow, SDL_BLENDMODE_MOD);
 	
 	self->window.camera.lighting = 1.0;
 	
@@ -1177,9 +1304,9 @@ static retno_t window_t__ctor(Window_t *self)
 
 static retno_t entity_t__ctor(Entity_t *self)
 {
-	int width = 0;
-	int height = 0;
-	int retno = 0;
+	int retno;
+	int width;
+	int height;
 	
 	self->entity.graphics.texture = IMG_LoadTexture(
 		self->entity.window->window.renderer,
@@ -1189,34 +1316,34 @@ static retno_t entity_t__ctor(Entity_t *self)
 	
 	retno = SDL_QueryTexture(
 		self->entity.graphics.texture,
-		NULL, NULL, &width, &height
+		NULL, NULL,
+		&width,
+		&height
 	);
 	LOG_ERROR(retno, SDL_GetError());
 	self->entity.graphics.width = width;
 	self->entity.graphics.height = height;
 	
-	self->entity.graphics.lightingColor.r = 0x00;
-	self->entity.graphics.lightingColor.g = 0x00;
-	self->entity.graphics.lightingColor.b = 0x00;
-	self->entity.graphics.lightingColor.a = 0x00;
-	self->entity.graphics.lightingRadius = 0.0;
-	
 	self->entity.state = calloc(1, sizeof(entity_state_t));
 	self->entity.state->id = 0;
 	self->entity.state->transition = CList();
 	
-	self->entity.draw = &entity_t__draw;
-	self->entity.states = &entity_t__states;
-	self->entity.transition = &entity_t__transition;
-	self->entity.update = &entity_t__update;
-	self->entity.getQTree = &entity_t__getQTree;
-	self->entity.setQTree = &entity_t__setQTree;
-	self->entity.getPosition = &entity_t__getPosition;
-	self->entity.setDeltaPosition = &entity_t__setDeltaPosition;
-	self->entity.getLayer = &entity_t__getLayer;
-	self->entity.getTextureRect = &entity_t__getTextureRect;
-	self->entity.getTexture = &entity_t__getTexture;
-	self->entity.getHitbox = &entity_t__getHitbox;
+	self->entity.draw				= &entity_t__draw;
+	self->entity.states			  = &entity_t__states;
+	self->entity.update			  = &entity_t__update;
+	self->entity.getQTree			= entity_t__getQTree;
+	self->entity.setQTree			= entity_t__setQTree;
+	self->entity.getLayer			= entity_t__getLayer;
+	self->entity.getHitbox		   = &entity_t__getHitbox;
+	self->entity.getTexture		  = &entity_t__getTexture;
+	self->entity.transition		  = &entity_t__transition;
+	self->entity.setLighting		 = &entity_t__setLighting;
+	self->entity.getLighting		 = &entity_t__getLighting;
+	self->entity.getPosition		 = &entity_t__getPosition;
+	self->entity.getTextureRect	  = &entity_t__getTextureRect;
+	self->entity.getLightingRect	 = &entity_t__getLightingRect;
+	self->entity.setDeltaPosition	= &entity_t__setDeltaPosition;
+	
 	
 	return SUCCESS;
 }
@@ -1283,6 +1410,9 @@ static retno_t entity_t__dtor(Entity_t *self)
 	
 	if (self->entity.graphics.texture)
 		SDL_DestroyTexture(self->entity.graphics.texture);
+
+	if (self->entity.graphics.shadow)
+		SDL_DestroyTexture(self->entity.graphics.shadow);
 	
 	if (self->entity.state)
 	{
