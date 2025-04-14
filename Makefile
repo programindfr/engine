@@ -13,7 +13,7 @@ UNIX_CC = gcc
 UNIX_SDL2_CFLAGS := $(shell sdl2-config --cflags)
 UNIX_SDL2_LDFLAGS := $(shell sdl2-config --libs) -lSDL2_image -lm
 
-ifeq ($(shell find | grep ./lib), ./lib)
+ifneq ($(shell find | grep ./lib), )
 	W64_CC = x86_64-w64-mingw32-gcc
 	W64_SDL2_CFLAGS := $(shell ./lib/bin/sdl2-config --cflags)
 	W64_SDL2_LDFLAGS := $(shell ./lib/bin/sdl2-config --libs) -lSDL2_image  -lm

@@ -14,14 +14,13 @@ INCLUDE SECTION
 #include <SDL2/SDL_image.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 /*
 CLASS STRUCTURE SECTION
 */
 
 #define LOG_ERROR(RETNO, NAME) if (RETNO) SDL_LogError(SDL_LOG_CATEGORY_ERROR, "l:%d no:%d %s", __LINE__, RETNO, NAME)
-#define SIGMOID(VAR) (1 / (1 + exp(-VAR)))
+#define SIGMOID(VAR) (1 / (1 + exp(-(VAR))))
 #define MODULUS(XVAR, YVAR) (sqrt((XVAR) * (XVAR) + (YVAR) * (YVAR)))
 #define MAX(XVAR, YVAR) ((XVAR) > (YVAR) ? (XVAR) : (YVAR))
 #define MIN(XVAR, YVAR) ((XVAR) < (YVAR) ? (XVAR) : (YVAR))
@@ -169,7 +168,7 @@ typedef struct window_camera {
 	SDL_FRect rect;
 	SDL_Texture *texture;
 	SDL_Texture *shadow;
-	float lighting;
+	SDL_Color lighting;
 } window_camera_t;
 
 #define WINDOW_CLASS \
@@ -180,7 +179,8 @@ SDL_Window		 *window;\
 SDL_Renderer	   *renderer;\
 window_camera_t	camera;\
 \
-void		 (*put)(Window_t *self, Entity_t *content);\
+void		 (*setLighting)(Window_t *self, SDL_Color color);\
+void		 (*putOnCamera)(Window_t *self, Entity_t *content);\
 uint8_t	  (*update)(Window_t *self);\
 uint64_t	 (*getDeltatime)(Window_t *self);\
 SDL_Event	(*getEvent)(Window_t *self);
@@ -664,17 +664,17 @@ static void qtree_t__draw(QTree_t *self, Window_t *window)
 
 
 /**
-	@fn static void window_t__put(Window_t *self, Entity_t *content)
+	@fn static void window_t__putOnCamera(Window_t *self, Entity_t *content)
 	@brief Put content to draw on the window
 	@param self Object pointer
 	@param content Element pointer
 	@return void
 */
-static void window_t__put(Window_t *self, Entity_t *content)
+static void window_t__putOnCamera(Window_t *self, Entity_t *content)
 {
-	SDL_FRect rect;
-	SDL_FRect shadowrect;
-	SDL_Texture *shadow = NULL;
+	SDL_FRect	  rect;
+	SDL_FRect	  shadowrect;
+	SDL_Texture	*shadow = NULL;
 
 	rect = content->entity.getTextureRect(content);
 	shadow = content->entity.getLighting(content);
@@ -743,7 +743,13 @@ static uint8_t window_t__update(Window_t *self)
 	SDL_RenderClear(self->window.renderer);
 
 	SDL_SetRenderTarget(self->window.renderer, self->window.camera.shadow);
-	SDL_SetRenderDrawColor(self->window.renderer, 32, 48, 64, 255);
+	SDL_SetRenderDrawColor(
+		self->window.renderer,
+		self->window.camera.lighting.r,
+		self->window.camera.lighting.g,
+		self->window.camera.lighting.b,
+		self->window.camera.lighting.a
+	);
 	SDL_RenderClear(self->window.renderer);
 
 #ifdef FPS_ECO
@@ -776,6 +782,18 @@ static uint64_t window_t__getDeltatime(Window_t *self)
 }
 
 /**
+	@fn static void window_t__setLighting(Window_t *self, SDL_Color color)
+	@brief Set window lighting
+	@param self Object pointer
+	@param color Lighting propreties
+	@return void
+*/
+static void window_t__setLighting(Window_t *self, SDL_Color color)
+{
+	self->window.camera.lighting = color;
+}
+
+/**
 	@fn static void entity_t__draw(Entity_t *self)
 	@brief Draw element on the screen
 	@param self Object pointer
@@ -783,7 +801,7 @@ static uint64_t window_t__getDeltatime(Window_t *self)
 */
 static void entity_t__draw(Entity_t *self)
 {
-	self->entity.window->window.put(self->entity.window, self);
+	self->entity.window->window.putOnCamera(self->entity.window, self);
 }
 
 /**
@@ -1129,16 +1147,16 @@ static SDL_FRect entity_t__getHitbox(Entity_t *self)
 */
 static void entity_t__setLighting(Entity_t *self, float radius, SDL_Color color)
 {
-	int		i, j;
-	int		width;
-	int		height;
-	int		brightness;
-	float	lenght;
-	float	lenghtmod;
-	float tmp;
-	SDL_FRect	rect;
-	SDL_PixelFormat *format = NULL;
-	uint32_t *pixels = NULL;
+	int				i, j;
+	int				width;
+	int				height;
+	int				brightness;
+	float			  lenght;
+	float			  lenghtmod;
+	float			  range;
+	uint32_t		   *pixels = NULL;
+	SDL_FRect		  rect;
+	SDL_PixelFormat	*format = NULL;
 
 	self->entity.graphics.radius = radius;
 	rect = self->entity.getTextureRect(self);
@@ -1166,9 +1184,8 @@ static void entity_t__setLighting(Entity_t *self, float radius, SDL_Color color)
 	{
 		for (j = 0; j < height; ++j)
 		{
-			tmp = (lenghtmod - MODULUS(i - lenght, j - lenght)) * 12 / lenghtmod - 8;
-			brightness = color.a * SIGMOID(tmp);
-			/*printf("[ %f, %f, %d ] ", tmp, SIGMOID(tmp), brightness);*/
+			range = (lenghtmod - MODULUS(i - lenght, j - lenght)) * 12 / lenghtmod - 8;
+			brightness = color.a * SIGMOID(range);
 			pixels[i * width + j] = SDL_MapRGBA(format, color.r, color.g, color.b, brightness);
 		}
 	}
@@ -1291,12 +1308,16 @@ static retno_t window_t__ctor(Window_t *self)
 		self->window.camera.rect.h
 	);
 	SDL_SetTextureBlendMode(self->window.camera.shadow, SDL_BLENDMODE_MOD);
+
+	self->window.camera.lighting.r = 255;
+	self->window.camera.lighting.g = 255;
+	self->window.camera.lighting.b = 255;
+	self->window.camera.lighting.a = 255;
 	
-	self->window.camera.lighting = 1.0;
-	
-	self->window.put = &window_t__put;
+	self->window.putOnCamera = &window_t__putOnCamera;
 	self->window.update = &window_t__update;
 	self->window.getEvent = &window_t__getEvent;
+	self->window.setLighting = &window_t__setLighting;
 	self->window.getDeltatime = &window_t__getDeltatime;
 	
 	return SUCCESS;
