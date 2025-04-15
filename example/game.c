@@ -11,7 +11,6 @@ int main(int argc, char *argv[])
 	SDL_FRect	rectp = { 3, 3, 10, 12 };
 	SDL_FRect	rectt = { 6, 8, 4, 6 };
 	SDL_FRect	screen = { 0, 0, 400, 250 };
-	layer_t	  layer = NO_LAYER;
 	float		x, y;
 	SDL_Color	color = { 255, 200, 128, 255 };
 	
@@ -19,7 +18,6 @@ int main(int argc, char *argv[])
 	Entity_t *player = NULL;
 	QTree_t *tree = QTree(screen);
 	CList_t *list = NULL;
-	clist_block_t *block = NULL;
 	lighting.a = 255;
 
 	srand(SDL_GetTicks64());
@@ -98,58 +96,12 @@ int main(int argc, char *argv[])
 	
 	while (loop)
 	{
-		block = NULL;
 		list = tree->qtree.fetch(tree, screen);
-		player = list->clist.iter(list, &block);
-		
-		while (player)
-		{
-			layer = player->entity.getLayer(player);
-			if (layer & LAYER_01)
-			{
-				player->entity.draw(player);
-			}
-			player = list->clist.iter(list, &block);
-		}
-
-		block = NULL;
-		player = list->clist.iter(list, &block);
-		
-		while (player)
-		{
-			layer = player->entity.getLayer(player);
-			if (layer & LAYER_03)
-			{
-				player->entity.update(player);
-				player->entity.draw(player);
-			}
-			player = list->clist.iter(list, &block);
-		}
-
-		block = NULL;
-		player = list->clist.iter(list, &block);
-		
-		while (player)
-		{
-			layer = player->entity.getLayer(player);
-			if (layer & LAYER_04)
-			{
-				player->entity.draw(player);
-			}
-			player = list->clist.iter(list, &block);
-		}
-
-		player = list->clist.pop(list);
-		while (player)
-		{
-			layer = player->entity.getLayer(player);
-			if (layer & LAYER_05)
-			{
-				player->entity.draw(player);
-			}
-			player = list->clist.pop(list);
-		}
-		
+		list->clist.entityUpdateAndDraw(list, NO_LAYER, LAYER_01);
+		list->clist.entityUpdateAndDraw(list, LAYER_03, LAYER_03);
+		list->clist.entityUpdateAndDraw(list, NO_LAYER, LAYER_04);
+		list->clist.entityUpdateAndDraw(list, NO_LAYER, LAYER_05);
+		list->clist.empty(list);
 		delete(list);
 		
 		tree->qtree.update(tree);

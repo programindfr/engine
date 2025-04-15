@@ -118,10 +118,12 @@ typedef struct clist_block {
 #define CLIST_CLASS \
 clist_block_t *head;\
 \
+void *(*pop)(CList_t *self);\
+void (*empty)(CList_t *self);\
 void (*push)(CList_t *self, void *content);\
 void (*remove)(CList_t *self, void *content);\
-void *(*pop)(CList_t *self);\
-void *(*iter)(CList_t *self, clist_block_t **block);
+void *(*iter)(CList_t *self, clist_block_t **block);\
+void (*entityUpdateAndDraw)(CList_t *self, layer_t updateLayer, layer_t drawLayer);
 
 typedef struct clist_s {
 	BASE_CLASS
@@ -384,6 +386,50 @@ static void clist_t__remove(CList_t *self, void *content)
 			prev = block;
 			block = block->next;
 		}
+	}
+}
+
+/**
+	@fn static void clist_t__empty(CList_t *self)
+	@brief Empty CList
+	@param self Object pointer
+	@return void
+*/
+static void clist_t__empty(CList_t *self)
+{
+	void *content = NULL;
+	
+	content = self->clist.pop(self);
+	while (content)
+		content = self->clist.pop(self);
+}
+
+/**
+	@fn static void clist_t__entityUpdateAndDraw(CList_t *self, layer_t updateLayer, layer_t drawLayer)
+	@brief Update and draw enities selected by layer
+	@param self Object pointer
+	@param updateLayer Layers to update
+	@param drawLayer Layers to draw
+	@return void
+*/
+static void clist_t__entityUpdateAndDraw(CList_t *self, layer_t updateLayer, layer_t drawLayer)
+{
+	layer_t		  layer = NO_LAYER;
+	Entity_t		 *content = NULL;
+	clist_block_t	*block = NULL;
+	
+	content = self->clist.iter(self, &block);
+	while (content)
+	{
+		layer = content->entity.getLayer(content);
+		
+		if (layer & updateLayer)
+			content->entity.update(content);
+
+		if (layer & drawLayer)
+			content->entity.draw(content);
+		
+		content = self->clist.iter(self, &block);
 	}
 }
 
@@ -1237,6 +1283,8 @@ static retno_t clist_t__ctor(CList_t *self)
 	self->clist.pop = &clist_t__pop;
 	self->clist.iter = &clist_t__iter;
 	self->clist.remove = &clist_t__remove;
+	self->clist.empty = &clist_t__empty;
+	self->clist.entityUpdateAndDraw = &clist_t__entityUpdateAndDraw;
 	
 	return SUCCESS;
 }
