@@ -294,6 +294,7 @@ CLASS FUNCTION SECTION
 */
 
 /**
+	@relates clist_s
 	@fn static void clist_t__push(CList_t *self, void *content)
 	@brief Head push
 	@param self Object pointer
@@ -313,6 +314,7 @@ static void clist_t__push(CList_t *self, void *content)
 }
 
 /**
+	@relates clist_s
 	@fn static void *clist_t__pop(CList_t *self)
 	@brief Head pop
 	@param self Object pointer
@@ -336,6 +338,7 @@ static void *clist_t__pop(CList_t *self)
 }
 
 /**
+	@relates clist_s
 	@fn static void *clist_t__iter(CList_t *self, clist_block_t **block)
 	@brief Iterate chained list elements
 	@param self Object pointer
@@ -358,6 +361,7 @@ static void *clist_t__iter(CList_t *self, clist_block_t **block)
 }
 
 /**
+	@relates clist_s
 	@fn static void clist_t__remove(CList_t *self, void *content)
 	@brief Remove element
 	@param self Object pointer
@@ -390,6 +394,7 @@ static void clist_t__remove(CList_t *self, void *content)
 }
 
 /**
+	@relates clist_s
 	@fn static void clist_t__empty(CList_t *self)
 	@brief Empty CList
 	@param self Object pointer
@@ -405,6 +410,7 @@ static void clist_t__empty(CList_t *self)
 }
 
 /**
+	@relates clist_s
 	@fn static void clist_t__entityUpdateAndDraw(CList_t *self, layer_t updateLayer, layer_t drawLayer)
 	@brief Update and draw enities selected by layer
 	@param self Object pointer
@@ -434,6 +440,7 @@ static void clist_t__entityUpdateAndDraw(CList_t *self, layer_t updateLayer, lay
 }
 
 /**
+	@relates qtree_s
 	@fn static void qtree_t__insert(QTree_t *self, Entity_t *content)
 	@brief Insert element
 	@param self Object pointer
@@ -502,6 +509,7 @@ static void qtree_t__insert(QTree_t *self, Entity_t *content)
 }
 
 /**
+	@relates qtree_s
 	@fn static uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 	@brief Remove element
 	@param self Object pointer
@@ -541,6 +549,7 @@ static uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 }
 
 /**
+	@relates qtree_s
 	@fn static CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 	@brief Fetch elements in rect area
 	@param self Object pointer
@@ -594,6 +603,7 @@ static CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 }
 
 /**
+	@relates qtree_s
 	@fn static void qtree_t__update(QTree_t *self)
 	@brief Update elements position in quadtree and clean unused quadtree
 	@param self Object pointer
@@ -685,6 +695,7 @@ static void qtree_t__update(QTree_t *self)
 }
 
 /**
+	@relates qtree_s
 	@fn static void qtree_t__draw(QTree_t *self, Window_t *window)
 	@brief Draw quadtree area
 	@param self Object pointer
@@ -710,6 +721,7 @@ static void qtree_t__draw(QTree_t *self, Window_t *window)
 
 
 /**
+	@relates window_s
 	@fn static void window_t__putOnCamera(Window_t *self, Entity_t *content)
 	@brief Put content to draw on the window
 	@param self Object pointer
@@ -763,6 +775,7 @@ static void window_t__putOnCamera(Window_t *self, Entity_t *content)
 }
 
 /**
+	@relates window_s
 	@fn static uint8_t window_t__update(Window_t *self)
 	@brief Update the window and draw all elements
 	@param self Object pointer
@@ -806,6 +819,7 @@ static uint8_t window_t__update(Window_t *self)
 }
 
 /**
+	@relates window_s
 	@fn static SDL_Event window_t__getEvent(Window_t *self)
 	@brief Get window event
 	@param self Object pointer
@@ -817,6 +831,7 @@ static SDL_Event window_t__getEvent(Window_t *self)
 }
 
 /**
+	@relates window_s
 	@fn static uint64_t window_t__getDeltatime(Window_t *self)
 	@brief Get window deltatime
 	@param self Object pointer
@@ -828,6 +843,7 @@ static uint64_t window_t__getDeltatime(Window_t *self)
 }
 
 /**
+	@relates window_s
 	@fn static void window_t__setLighting(Window_t *self, SDL_Color color)
 	@brief Set window lighting
 	@param self Object pointer
@@ -840,6 +856,7 @@ static void window_t__setLighting(Window_t *self, SDL_Color color)
 }
 
 /**
+	@relates entity_s
 	@fn static void entity_t__draw(Entity_t *self)
 	@brief Draw element on the screen
 	@param self Object pointer
@@ -851,6 +868,7 @@ static void entity_t__draw(Entity_t *self)
 }
 
 /**
+	@relates entity_s
 	@fn static CList_t *entity_t__states(Entity_t *self)
 	@brief Fetch Entity automata states
 	@param self Object pointer
@@ -912,6 +930,7 @@ static CList_t *entity_t__states(Entity_t *self)
 }
 
 /**
+	@relates entity_s
 	@fn static void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
 	@brief Add a new transition in the Entity automata
 	@param self Object pointer
@@ -970,6 +989,7 @@ static void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, in
 }
 
 /**
+	@relates entity_s
 	@fn static uint8_t entity_t__update(Entity_t *self)
 	@brief Update Entity internal automata
 	@param self Object pointer
@@ -1072,6 +1092,7 @@ static uint8_t entity_t__update(Entity_t *self)
 }
 
 /**
+	@relates entity_s
 	@fn static QTree_t *entity_t__getQTree(Entity_t *self)
 	@brief Get entity qtree
 	@param self Object pointer
@@ -1083,6 +1104,7 @@ static QTree_t *entity_t__getQTree(Entity_t *self)
 }
 
 /**
+	@relates entity_s
 	@fn static void entity_t__setQTree(Entity_t *self, QTree_t *qtree)
 	@brief Set entity qtree
 	@param self Object pointer
@@ -1095,6 +1117,7 @@ static void entity_t__setQTree(Entity_t *self, QTree_t *qtree)
 }
 
 /**
+	@relates entity_s
 	@fn static SDL_FPoint entity_t__getPosition(Entity_t *self)
 	@brief Get entity position
 	@param self Object pointer
@@ -1111,6 +1134,7 @@ static SDL_FPoint entity_t__getPosition(Entity_t *self)
 }
 
 /**
+	@relates entity_s
 	@fn static void entity_t__setDeltaPosition(Entity_t *self, float dx, float dy)
 	@brief Set entity delta position
 	@param self Object pointer
@@ -1125,6 +1149,7 @@ static void entity_t__setDeltaPosition(Entity_t *self, float dx, float dy)
 }
 
 /**
+	@relates entity_s
 	@fn static layer_t entity_t__getLayer(Entity_t *self)
 	@brief Get entity layer
 	@param self Object pointer
@@ -1136,6 +1161,7 @@ static layer_t entity_t__getLayer(Entity_t *self)
 }
 
 /**
+	@relates entity_s
 	@fn static SDL_FRect entity_t__getTextureRect(Entity_t *self)
 	@brief Get entity texture rect
 	@param self Object pointer
@@ -1154,6 +1180,7 @@ static SDL_FRect entity_t__getTextureRect(Entity_t *self)
 }
 
 /**
+	@relates entity_s
 	@fn static SDL_Texture *entity_t__getTexture(Entity_t *self)
 	@brief Get entity texture
 	@param self Object pointer
@@ -1165,6 +1192,7 @@ static SDL_Texture *entity_t__getTexture(Entity_t *self)
 }
 
 /**
+	@relates entity_s
 	@fn static SDL_FRect entity_t__getHitbox(Entity_t *self)
 	@brief Get entity hitbox rect
 	@param self Object pointer
@@ -1182,6 +1210,7 @@ static SDL_FRect entity_t__getHitbox(Entity_t *self)
 }
 
 /**
+	@relates entity_s
 	@fn static void entity_t__setLighting(Entity_t *self, float radius, SDL_Color color)
 	@brief Set entity lighting radius/color by processing texture
 	@param self Object pointer
@@ -1243,6 +1272,7 @@ static void entity_t__setLighting(Entity_t *self, float radius, SDL_Color color)
 }
 
 /**
+	@relates entity_s
 	@fn static SDL_Texture *entity_t__getLighting(Entity_t *self)
 	@brief Get entity lighting texture
 	@param self Object pointer
@@ -1254,6 +1284,7 @@ static SDL_Texture *entity_t__getLighting(Entity_t *self)
 }
 
 /**
+	@relates entity_s
 	@fn static SDL_FRect entity_t__getLightingRect(Entity_t *self)
 	@brief Get entity Lighting rect
 	@param self Object pointer
