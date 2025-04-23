@@ -998,16 +998,16 @@ static void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, in
 static uint8_t entity_t__update(Entity_t *self)
 {
 	uint8_t				flag = 0;
-	QTree_t				*qtree = NULL;
 	CList_t				*list = NULL;
+	QTree_t				*qtree = NULL;
 	Entity_t			   *elem = NULL;
 	uint64_t			   deltatime = 0;
-	action_t			   action = NO_ACT;
 	Window_t			   *window = NULL;
+	action_t			   action = NO_ACT;
 	SDL_FRect			  area;
 	SDL_FRect			  rect;
-	SDL_FRect			  elemrect;
 	SDL_Event			  event;
+	SDL_FRect			  elemrect;
 	clist_block_t		  *block = NULL;
 	entity_state_t		 *state = NULL;
 	entity_transition_t	*transition = NULL;
