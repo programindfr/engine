@@ -2,7 +2,7 @@ COLOR_GREEN := "\033[0;32m"
 COLOR_YELLOW := "\033[0;33m"
 COLOR_END := "\033[0m"
 
-CFLAGS += -Wall -Wextra -std=c89 -pedantic -Wno-unused-parameter -g -I.
+CFLAGS += -Wall -Wextra -Werror -std=c89 -pedantic -Wno-unused-parameter -g -I.
 CFLAGS += -DDEBUG
 #CFLAGS += -DFPS_ECO
 #CFLAGS += -DDEBUG_BOX

@@ -1554,19 +1554,39 @@ static void *new(type_t type, ...)
 	void	   *self = NULL;
 	va_list	arguments;
 	retno_t	retno;
+
+	switch (type)
+	{
+	case CLIST:
+		self = calloc(1, sizeof(CList_t));
+		break;
+
+	case QTREE:
+		self = calloc(1, sizeof(QTree_t));
+		break;
+
+	case WINDOW:
+		self = calloc(1, sizeof(Window_t));
+		break;
+
+	case ENTITY:
+		self = calloc(1, sizeof(Entity_t));
+		break;
+
+	default:
+		return self;
+	}
 	
 	va_start(arguments, type);
 	
 	if (type & CLIST)
 	{
-		self = calloc(1, sizeof(CList_t));
 		retno = clist_t__ctor((CList_t *) self);
 		LOG_ERROR(retno, "clist_t__ctor");
 	}
 	
 	if (type & QTREE)
 	{
-		self = calloc(1, sizeof(QTree_t));
 		((QTree_t *) self)->qtree.rect = va_arg(arguments, SDL_FRect);
 		retno = qtree_t__ctor((QTree_t *) self);
 		LOG_ERROR(retno, "qtree_t__ctor");
@@ -1574,14 +1594,12 @@ static void *new(type_t type, ...)
 	
 	if (type & WINDOW)
 	{
-		self = calloc(1, sizeof(Window_t));
 		retno = window_t__ctor((Window_t *) self);
 		LOG_ERROR(retno, "window_t__ctor");
 	}
 	
 	if (type & ENTITY)
 	{
-		self = calloc(1, sizeof(Entity_t));
 		((Entity_t *) self)->entity.window = va_arg(arguments, Window_t *);
 		((Entity_t *) self)->entity.position.x = va_arg(arguments, double);
 		((Entity_t *) self)->entity.position.y = va_arg(arguments, double);
