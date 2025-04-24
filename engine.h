@@ -246,7 +246,7 @@ typedef struct entity_health {
 typedef struct entity_delta {
 	float x;
 	float y;
-	float lenght;
+	float s;
 } entity_delta_t;
 
 typedef struct entity_state {
@@ -1072,10 +1072,16 @@ static uint8_t entity_t__update(Entity_t *self)
 	if (action & ACT_06)
 		self->entity.delta.y = 0.0;
 
-	rect.x += self->entity.delta.x * deltatime;
-	rect.y += self->entity.delta.y * deltatime;
-	area.x += self->entity.delta.x * deltatime;
-	area.y += self->entity.delta.y * deltatime;
+	if (action & ACT_07)
+		self->entity.delta.s = 2.0;
+	
+	if (action & ACT_08)
+		self->entity.delta.s = 1.0;
+
+	rect.x += self->entity.delta.x * self->entity.delta.s * deltatime;
+	rect.y += self->entity.delta.y * self->entity.delta.s * deltatime;
+	area.x += self->entity.delta.x * self->entity.delta.s * deltatime;
+	area.y += self->entity.delta.y * self->entity.delta.s * deltatime;
 	qtree = self->entity.getQTree(self);
 
 	if (qtree)
@@ -1102,8 +1108,8 @@ static uint8_t entity_t__update(Entity_t *self)
 	if (!flag)
 		self->entity.setDeltaPosition(
 			self,
-			self->entity.delta.x * deltatime,
-			self->entity.delta.y * deltatime
+			self->entity.delta.x * self->entity.delta.s * deltatime,
+			self->entity.delta.y * self->entity.delta.s * deltatime
 		);
 	
 	return self->entity.state->id;
@@ -1441,6 +1447,8 @@ static retno_t entity_t__ctor(Entity_t *self)
 	LOG_ERROR(retno, SDL_GetError());
 	self->entity.graphics.width = width;
 	self->entity.graphics.height = height;
+	
+	self->entity.delta.s = 1.0;
 	
 	self->entity.state = calloc(1, sizeof(entity_state_t));
 	self->entity.state->id = 0;

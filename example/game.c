@@ -90,6 +90,8 @@ int main(int argc, char *argv[])
 	player->entity.transition(player, 0, SDL_KEYUP, SDLK_s, ACT_06, 0);
 	player->entity.transition(player, 0, SDL_KEYDOWN, SDLK_z, ACT_05, 0);
 	player->entity.transition(player, 0, SDL_KEYUP, SDLK_z, ACT_06, 0);
+	player->entity.transition(player, 0, SDL_KEYDOWN, SDLK_SPACE, ACT_07, 0);
+	player->entity.transition(player, 0, SDL_KEYUP, SDLK_SPACE, ACT_08, 0);
 	player->entity.transition(player, 0, SDL_KEYDOWN, SDLK_p, NO_ACT, 1);
 	player->entity.transition(player, 1, SDL_KEYDOWN, SDLK_p, NO_ACT, 0);
 	tree->qtree.insert(tree, player);
