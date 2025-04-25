@@ -1,5 +1,5 @@
 PROJECT_NAME           = "engine"
-PROJECT_BRIEF          = "c89 2d game engine"
+PROJECT_BRIEF          = "c89 2d game engine build with sdl2"
 CREATE_SUBDIRS         = YES
 OPTIMIZE_OUTPUT_FOR_C  = YES
 SOURCE_BROWSER         = YES
