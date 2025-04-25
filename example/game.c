@@ -3,15 +3,15 @@
 int main(int argc, char *argv[])
 {
 	int		  day = -1;
+	float		x, y;
 	size_t	   i;
 	size_t	   light = 255;
-	SDL_Color	lighting;
 	uint8_t	  loop = 1;
+	SDL_Color	lighting;
 	SDL_FRect	rectb = { 0, 0, 16, 16 };
 	SDL_FRect	rectp = { 3, 3, 10, 12 };
 	SDL_FRect	rectt = { 6, 8, 4, 6 };
 	SDL_FRect	screen = { 0, 0, 400, 250 };
-	float		x, y;
 	SDL_Color	color = { 255, 200, 128, 255 };
 	
 	Window_t *myGame = Window();
