@@ -28,13 +28,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
 	@relates clist_s
-	@fn static void clist_t__push(CList_t *self, void *content)
+	@fn void clist_t__push(CList_t *self, void *content)
 	@brief Head push
 	@param self Object pointer
 	@param content Element pointer
 	@return void
 */
-static void clist_t__push(CList_t *self, void *content)
+void clist_t__push(CList_t *self, void *content)
 {
 	clist_block_t *block = NULL;
 	
@@ -48,12 +48,12 @@ static void clist_t__push(CList_t *self, void *content)
 
 /**
 	@relates clist_s
-	@fn static void *clist_t__pop(CList_t *self)
+	@fn void *clist_t__pop(CList_t *self)
 	@brief Head pop
 	@param self Object pointer
 	@return Head element pointer
 */
-static void *clist_t__pop(CList_t *self)
+void *clist_t__pop(CList_t *self)
 {
 	void			 *content = NULL;
 	clist_block_t	*block = NULL;
@@ -72,7 +72,7 @@ static void *clist_t__pop(CList_t *self)
 
 /**
 	@relates clist_s
-	@fn static void *clist_t__iter(CList_t *self, clist_block_t **block)
+	@fn void *clist_t__iter(CList_t *self, clist_block_t **block)
 	@brief Iterate chained list elements
 	@param self Object pointer
 	@param block Link pointer
@@ -80,7 +80,7 @@ static void *clist_t__pop(CList_t *self)
 	
 	@todo explain/example
 */
-static void *clist_t__iter(CList_t *self, clist_block_t **block)
+void *clist_t__iter(CList_t *self, clist_block_t **block)
 {
 	if (!*block)
 		*block = self->clist.head;
@@ -95,13 +95,13 @@ static void *clist_t__iter(CList_t *self, clist_block_t **block)
 
 /**
 	@relates clist_s
-	@fn static void clist_t__remove(CList_t *self, void *content)
+	@fn void clist_t__remove(CList_t *self, void *content)
 	@brief Remove element
 	@param self Object pointer
 	@param content Element pointer
 	@return void
 */
-static void clist_t__remove(CList_t *self, void *content)
+void clist_t__remove(CList_t *self, void *content)
 {
 	clist_block_t *block = NULL;
 	clist_block_t *prev = NULL;
@@ -128,12 +128,12 @@ static void clist_t__remove(CList_t *self, void *content)
 
 /**
 	@relates clist_s
-	@fn static void clist_t__empty(CList_t *self)
+	@fn void clist_t__empty(CList_t *self)
 	@brief Empty CList
 	@param self Object pointer
 	@return void
 */
-static void clist_t__empty(CList_t *self)
+void clist_t__empty(CList_t *self)
 {
 	void *content = NULL;
 	
@@ -144,14 +144,14 @@ static void clist_t__empty(CList_t *self)
 
 /**
 	@relates clist_s
-	@fn static void clist_t__entityUpdateAndDraw(CList_t *self, layer_t updateLayer, layer_t drawLayer)
+	@fn void clist_t__entityUpdateAndDraw(CList_t *self, layer_t updateLayer, layer_t drawLayer)
 	@brief Update and draw enities selected by layer
 	@param self Object pointer
 	@param updateLayer Layers to update
 	@param drawLayer Layers to draw
 	@return void
 */
-static void clist_t__entityUpdateAndDraw(CList_t *self, layer_t updateLayer, layer_t drawLayer)
+void clist_t__entityUpdateAndDraw(CList_t *self, layer_t updateLayer, layer_t drawLayer)
 {
 	layer_t		  layer = NO_LAYER;
 	Entity_t		 *content = NULL;

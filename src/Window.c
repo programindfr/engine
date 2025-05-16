@@ -29,13 +29,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
 	@relates window_s
-	@fn static void window_t__putOnCamera(Window_t *self, Entity_t *content)
+	@fn void window_t__putOnCamera(Window_t *self, Entity_t *content)
 	@brief Put content to draw on the window
 	@param self Object pointer
 	@param content Element pointer
 	@return void
 */
-static void window_t__putOnCamera(Window_t *self, Entity_t *content)
+void window_t__putOnCamera(Window_t *self, Entity_t *content)
 {
 	SDL_FRect	  rect;
 	SDL_FRect	  shadowrect;
@@ -83,12 +83,12 @@ static void window_t__putOnCamera(Window_t *self, Entity_t *content)
 
 /**
 	@relates window_s
-	@fn static uint8_t window_t__update(Window_t *self)
+	@fn uint8_t window_t__update(Window_t *self)
 	@brief Update the window and draw all elements
 	@param self Object pointer
 	@return Boolean TRUE if quit signal is recieved
 */
-static uint8_t window_t__update(Window_t *self)
+uint8_t window_t__update(Window_t *self)
 {
 	uint64_t time;
 	
@@ -127,37 +127,37 @@ static uint8_t window_t__update(Window_t *self)
 
 /**
 	@relates window_s
-	@fn static SDL_Event window_t__getEvent(Window_t *self)
+	@fn SDL_Event window_t__getEvent(Window_t *self)
 	@brief Get window event
 	@param self Object pointer
 	@return Window event
 */
-static SDL_Event window_t__getEvent(Window_t *self)
+SDL_Event window_t__getEvent(Window_t *self)
 {
 	return self->window.event;
 }
 
 /**
 	@relates window_s
-	@fn static uint64_t window_t__getDeltatime(Window_t *self)
+	@fn uint64_t window_t__getDeltatime(Window_t *self)
 	@brief Get window deltatime
 	@param self Object pointer
 	@return Window deltatime
 */
-static uint64_t window_t__getDeltatime(Window_t *self)
+uint64_t window_t__getDeltatime(Window_t *self)
 {
 	return self->window.deltatime;
 }
 
 /**
 	@relates window_s
-	@fn static void window_t__setLighting(Window_t *self, SDL_Color color)
+	@fn void window_t__setLighting(Window_t *self, SDL_Color color)
 	@brief Set window lighting
 	@param self Object pointer
 	@param color Lighting propreties
 	@return void
 */
-static void window_t__setLighting(Window_t *self, SDL_Color color)
+void window_t__setLighting(Window_t *self, SDL_Color color)
 {
 	self->window.camera.lighting = color;
 }

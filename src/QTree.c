@@ -31,13 +31,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
 	@relates qtree_s
-	@fn static void qtree_t__insert(QTree_t *self, Entity_t *content)
+	@fn void qtree_t__insert(QTree_t *self, Entity_t *content)
 	@brief Insert element
 	@param self Object pointer
 	@param content Element pointer
 	@return void
 */
-static void qtree_t__insert(QTree_t *self, Entity_t *content)
+void qtree_t__insert(QTree_t *self, Entity_t *content)
 {
 	size_t		i, j;
 	size_t		bound;
@@ -100,13 +100,13 @@ static void qtree_t__insert(QTree_t *self, Entity_t *content)
 
 /**
 	@relates qtree_s
-	@fn static uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
+	@fn uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 	@brief Remove element
 	@param self Object pointer
 	@param content Element pointer
 	@return Boolean for recurrent algorithm
 */
-static uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
+uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 {
 	size_t		i;
 	QTree_t	   *qtree = NULL;
@@ -140,13 +140,13 @@ static uint8_t qtree_t__remove(QTree_t *self, Entity_t *content)
 
 /**
 	@relates qtree_s
-	@fn static CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
+	@fn CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 	@brief Fetch elements in rect area
 	@param self Object pointer
 	@param rect Area
 	@return Chained list of elements
 */
-static CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
+CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 {
 	size_t	   i;
 	CList_t	  *list = NULL;
@@ -194,12 +194,12 @@ static CList_t *qtree_t__fetch(QTree_t *self, SDL_FRect rect)
 
 /**
 	@relates qtree_s
-	@fn static void qtree_t__update(QTree_t *self)
+	@fn void qtree_t__update(QTree_t *self)
 	@brief Update elements position in quadtree and clean unused quadtree
 	@param self Object pointer
 	@return void
 */
-static void qtree_t__update(QTree_t *self)
+void qtree_t__update(QTree_t *self)
 {
 	size_t		i, j;
 	size_t		count = 0;
@@ -286,7 +286,7 @@ static void qtree_t__update(QTree_t *self)
 
 /**
 	@relates qtree_s
-	@fn static void qtree_t__draw(QTree_t *self, Window_t *window)
+	@fn void qtree_t__draw(QTree_t *self, Window_t *window)
 	@brief Draw quadtree area
 	@param self Object pointer
 	@param window Window pointer
@@ -294,7 +294,7 @@ static void qtree_t__update(QTree_t *self)
 	
 	@warning Use it only for debugging
 */
-static void qtree_t__draw(QTree_t *self, Window_t *window)
+void qtree_t__draw(QTree_t *self, Window_t *window)
 {
 	size_t i;
 	

@@ -32,24 +32,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
 	@relates entity_s
-	@fn static void entity_t__draw(Entity_t *self)
+	@fn void entity_t__draw(Entity_t *self)
 	@brief Draw element on the screen
 	@param self Object pointer
 	@return void
 */
-static void entity_t__draw(Entity_t *self)
+void entity_t__draw(Entity_t *self)
 {
 	self->entity.window->window.putOnCamera(self->entity.window, self);
 }
 
 /**
 	@relates entity_s
-	@fn static CList_t *entity_t__states(Entity_t *self)
+	@fn CList_t *entity_t__states(Entity_t *self)
 	@brief Fetch Entity automata states
 	@param self Object pointer
 	@return CList_t of entity_state_t pointers
 */
-static CList_t *entity_t__states(Entity_t *self)
+CList_t *entity_t__states(Entity_t *self)
 {
 	uint8_t				flag = 0;
 	CList_t				*list = NULL;
@@ -106,7 +106,7 @@ static CList_t *entity_t__states(Entity_t *self)
 
 /**
 	@relates entity_s
-	@fn static void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
+	@fn void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
 	@brief Add a new transition in the Entity automata
 	@param self Object pointer
 	@param self Source state id
@@ -116,7 +116,7 @@ static CList_t *entity_t__states(Entity_t *self)
 	@param self Destination state id
 	@return void
 */
-static void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
+void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, int32_t sym, action_t action, uint8_t to)
 {
 	CList_t				*states = NULL;
 	clist_block_t		  *block = NULL;
@@ -165,12 +165,12 @@ static void entity_t__transition(Entity_t *self, uint8_t from, uint32_t type, in
 
 /**
 	@relates entity_s
-	@fn static uint8_t entity_t__update(Entity_t *self)
+	@fn uint8_t entity_t__update(Entity_t *self)
 	@brief Update Entity internal automata
 	@param self Object pointer
 	@return Current state id of the Entity automata
 */
-static uint8_t entity_t__update(Entity_t *self)
+uint8_t entity_t__update(Entity_t *self)
 {
 	uint8_t				flag = 0;
 	CList_t				*list = NULL;
@@ -274,37 +274,37 @@ static uint8_t entity_t__update(Entity_t *self)
 
 /**
 	@relates entity_s
-	@fn static QTree_t *entity_t__getQTree(Entity_t *self)
+	@fn QTree_t *entity_t__getQTree(Entity_t *self)
 	@brief Get entity qtree
 	@param self Object pointer
 	@return Entity qtree
 */
-static QTree_t *entity_t__getQTree(Entity_t *self)
+QTree_t *entity_t__getQTree(Entity_t *self)
 {
 	return self->entity.qtree;
 }
 
 /**
 	@relates entity_s
-	@fn static void entity_t__setQTree(Entity_t *self, QTree_t *qtree)
+	@fn void entity_t__setQTree(Entity_t *self, QTree_t *qtree)
 	@brief Set entity qtree
 	@param self Object pointer
 	@param qtree New qtree pointer
 	@return void
 */
-static void entity_t__setQTree(Entity_t *self, QTree_t *qtree)
+void entity_t__setQTree(Entity_t *self, QTree_t *qtree)
 {
 	self->entity.qtree = qtree;
 }
 
 /**
 	@relates entity_s
-	@fn static SDL_FPoint entity_t__getPosition(Entity_t *self)
+	@fn SDL_FPoint entity_t__getPosition(Entity_t *self)
 	@brief Get entity position
 	@param self Object pointer
 	@return Entity position
 */
-static SDL_FPoint entity_t__getPosition(Entity_t *self)
+SDL_FPoint entity_t__getPosition(Entity_t *self)
 {
 	SDL_FPoint point;
 	
@@ -316,14 +316,14 @@ static SDL_FPoint entity_t__getPosition(Entity_t *self)
 
 /**
 	@relates entity_s
-	@fn static void entity_t__setDeltaPosition(Entity_t *self, float dx, float dy)
+	@fn void entity_t__setDeltaPosition(Entity_t *self, float dx, float dy)
 	@brief Set entity delta position
 	@param self Object pointer
 	@param dx Delta x position
 	@param dy Delta y position
 	@return void
 */
-static void entity_t__setDeltaPosition(Entity_t *self, float dx, float dy)
+void entity_t__setDeltaPosition(Entity_t *self, float dx, float dy)
 {
 	self->entity.position.x += dx;
 	self->entity.position.y += dy;
@@ -331,24 +331,24 @@ static void entity_t__setDeltaPosition(Entity_t *self, float dx, float dy)
 
 /**
 	@relates entity_s
-	@fn static layer_t entity_t__getLayer(Entity_t *self)
+	@fn layer_t entity_t__getLayer(Entity_t *self)
 	@brief Get entity layer
 	@param self Object pointer
 	@return Entity layer
 */
-static layer_t entity_t__getLayer(Entity_t *self)
+layer_t entity_t__getLayer(Entity_t *self)
 {
 	return self->entity.position.layer;
 }
 
 /**
 	@relates entity_s
-	@fn static SDL_FRect entity_t__getTextureRect(Entity_t *self)
+	@fn SDL_FRect entity_t__getTextureRect(Entity_t *self)
 	@brief Get entity texture rect
 	@param self Object pointer
 	@return Entity texture rect
 */
-static SDL_FRect entity_t__getTextureRect(Entity_t *self)
+SDL_FRect entity_t__getTextureRect(Entity_t *self)
 {
 	SDL_FRect rect;
 
@@ -362,24 +362,24 @@ static SDL_FRect entity_t__getTextureRect(Entity_t *self)
 
 /**
 	@relates entity_s
-	@fn static SDL_Texture *entity_t__getTexture(Entity_t *self)
+	@fn SDL_Texture *entity_t__getTexture(Entity_t *self)
 	@brief Get entity texture
 	@param self Object pointer
 	@return Entity texture
 */
-static SDL_Texture *entity_t__getTexture(Entity_t *self)
+SDL_Texture *entity_t__getTexture(Entity_t *self)
 {
 	return self->entity.graphics.texture;
 }
 
 /**
 	@relates entity_s
-	@fn static SDL_FRect entity_t__getHitbox(Entity_t *self)
+	@fn SDL_FRect entity_t__getHitbox(Entity_t *self)
 	@brief Get entity hitbox rect
 	@param self Object pointer
 	@return Entity hitbox rect
 */
-static SDL_FRect entity_t__getHitbox(Entity_t *self)
+SDL_FRect entity_t__getHitbox(Entity_t *self)
 {
 	SDL_FRect rect;
 
@@ -392,7 +392,7 @@ static SDL_FRect entity_t__getHitbox(Entity_t *self)
 
 /**
 	@relates entity_s
-	@fn static void entity_t__setLighting(Entity_t *self, float radius, SDL_Color color)
+	@fn void entity_t__setLighting(Entity_t *self, float radius, SDL_Color color)
 	@brief Set entity lighting radius/color by processing texture
 	@param self Object pointer
 	@param radius Lighting radius
@@ -401,7 +401,7 @@ static SDL_FRect entity_t__getHitbox(Entity_t *self)
 
 	@warning This function is slow so don't call it often
 */
-static void entity_t__setLighting(Entity_t *self, float radius, SDL_Color color)
+void entity_t__setLighting(Entity_t *self, float radius, SDL_Color color)
 {
 	int				i, j;
 	int				width;
@@ -454,24 +454,24 @@ static void entity_t__setLighting(Entity_t *self, float radius, SDL_Color color)
 
 /**
 	@relates entity_s
-	@fn static SDL_Texture *entity_t__getLighting(Entity_t *self)
+	@fn SDL_Texture *entity_t__getLighting(Entity_t *self)
 	@brief Get entity lighting texture
 	@param self Object pointer
 	@return Entity lighting texture
 */
-static SDL_Texture *entity_t__getLighting(Entity_t *self)
+SDL_Texture *entity_t__getLighting(Entity_t *self)
 {
 	return self->entity.graphics.shadow;
 }
 
 /**
 	@relates entity_s
-	@fn static SDL_FRect entity_t__getLightingRect(Entity_t *self)
+	@fn SDL_FRect entity_t__getLightingRect(Entity_t *self)
 	@brief Get entity Lighting rect
 	@param self Object pointer
 	@return Entity lighting rect
 */
-static SDL_FRect entity_t__getLightingRect(Entity_t *self)
+SDL_FRect entity_t__getLightingRect(Entity_t *self)
 {
 	SDL_FRect rect;
 
